@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import PasswordGate from "@/components/layout/PasswordGate";
 import { siteTitle, siteDescription } from "@/data/content";
 
 const geistSans = Geist({
@@ -29,12 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <footer className="border-t border-border py-8 text-center text-sm text-muted">
-          Shadow — VEP Innovations &middot; February 2026 &middot; Interactive
-          PRD
-        </footer>
+        <PasswordGate>
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
+          <footer className="border-t border-border py-8 text-center text-sm text-muted">
+            Shadow — VEP Innovations &middot; February 2026 &middot; Interactive
+            PRD
+          </footer>
+        </PasswordGate>
       </body>
     </html>
   );

@@ -11,27 +11,43 @@ export default function RightPanelChat() {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   const [visibleMessages, setVisibleMessages] = useState(1);
   const [inputValue, setInputValue] = useState("");
+  const [actionState, setActionState] = useState<"pending" | "approved" | "editing" | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [visibleMessages]);
+  }, [visibleMessages, actionState]);
+
+  const currentMsg = chatTranscript[visibleMessages];
+  const isAtAction = currentMsg?.role === "action" && actionState === null;
+  const showResult = actionState === "approved" && visibleMessages < chatTranscript.length;
 
   const handleSend = () => {
     if (visibleMessages < chatTranscript.length) {
-      setVisibleMessages((v) => Math.min(v + 2, chatTranscript.length));
+      const nextMsg = chatTranscript[visibleMessages];
+      if (nextMsg?.role === "action") {
+        setVisibleMessages((v) => v + 1);
+        setActionState("pending");
+      } else {
+        setVisibleMessages((v) => Math.min(v + 2, chatTranscript.length));
+      }
       setInputValue("");
     }
+  };
+
+  const handleApprove = () => {
+    setActionState("approved");
+    setVisibleMessages((v) => Math.min(v + 1, chatTranscript.length));
   };
 
   const resetChat = () => {
     setVisibleMessages(1);
     setInputValue("");
+    setActionState(null);
   };
 
   const shadowPanel = (
     <div className="flex h-full flex-col">
-      {/* Panel header */}
       <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2">
         <span className="flex h-5 w-5 items-center justify-center rounded bg-violet-600 text-[9px] font-bold text-white">
           S
@@ -39,7 +55,6 @@ export default function RightPanelChat() {
         <span className="text-[11px] font-semibold text-zinc-800">Shadow</span>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-zinc-200">
         {(["record", "chat"] as Tab[]).map((tab) => (
           <button
@@ -56,7 +71,6 @@ export default function RightPanelChat() {
         ))}
       </div>
 
-      {/* Record tab */}
       {activeTab === "record" && (
         <div className="p-3">
           <div className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-2 py-1.5">
@@ -94,41 +108,135 @@ export default function RightPanelChat() {
         </div>
       )}
 
-      {/* Chat tab */}
       {activeTab === "chat" && (
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
-            {chatTranscript.slice(0, visibleMessages).map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+            {chatTranscript.slice(0, visibleMessages).map((msg, i) => {
+              if (msg.role === "action") {
+                return (
+                  <div key={i} className="space-y-1.5">
+                    <div className="border border-zinc-200 bg-zinc-50 rounded-lg px-2.5 py-1.5">
+                      <div className="mb-1 text-[9px] font-semibold text-violet-600">Shadow</div>
+                      <div className="text-[10px] leading-relaxed text-zinc-700">{msg.content}</div>
+                    </div>
+
+                    <div className="rounded-lg border border-violet-200 bg-violet-50 p-2">
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <span className="text-[8px] font-semibold uppercase text-violet-600">Skill Execution Preview</span>
+                        <span className="rounded bg-violet-100 px-1 py-0.5 text-[7px] text-violet-600">{msg.skillName}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {msg.preview?.map((item, j) => (
+                          <div key={j} className="flex justify-between text-[9px]">
+                            <span className="text-zinc-500">{item.label}</span>
+                            <span className="font-medium text-zinc-700">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {actionState === "pending" && (
+                        <div className="mt-2 space-y-1.5">
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={handleApprove}
+                              className="flex-1 rounded bg-violet-600 py-1.5 text-[9px] font-medium text-white hover:bg-violet-700"
+                            >
+                              Approve & Execute
+                            </button>
+                            <button
+                              onClick={() => setActionState("editing")}
+                              className="flex-1 rounded border border-violet-300 py-1.5 text-[9px] font-medium text-violet-600 hover:bg-violet-100"
+                            >
+                              Review & Edit
+                            </button>
+                          </div>
+                          <button className="w-full rounded border border-zinc-200 py-1 text-[9px] text-zinc-400 hover:bg-zinc-50">
+                            Skip — I&apos;ll do it manually
+                          </button>
+                        </div>
+                      )}
+
+                      {actionState === "editing" && (
+                        <div className="mt-2">
+                          <div className="rounded border border-amber-200 bg-amber-50 p-1.5 mb-1.5">
+                            <div className="text-[8px] font-semibold text-amber-600 mb-1">Edit before executing</div>
+                            {msg.preview?.map((item, j) => (
+                              <div key={j} className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[8px] text-zinc-500 w-16 shrink-0">{item.label}</span>
+                                <input
+                                  type="text"
+                                  defaultValue={item.value}
+                                  className="flex-1 rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[9px] outline-none focus:border-violet-400"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={handleApprove}
+                            className="w-full rounded bg-violet-600 py-1.5 text-[9px] font-medium text-white hover:bg-violet-700"
+                          >
+                            Approve & Execute
+                          </button>
+                        </div>
+                      )}
+
+                      {actionState === "approved" && (
+                        <div className="mt-2 flex items-center gap-1 rounded bg-green-50 p-1.5 text-[9px] text-green-700">
+                          <span>&#10003;</span>
+                          <span>Approved by expert</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              if (msg.role === "result") {
+                return (
+                  <div key={i} className="rounded-lg border border-green-200 bg-green-50 px-2.5 py-1.5">
+                    <div className="mb-0.5 text-[9px] font-semibold text-green-700">Execution Complete</div>
+                    <div className="whitespace-pre-wrap text-[10px] leading-relaxed text-green-800">
+                      {msg.content}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
                 <div
-                  className={`max-w-[92%] rounded-lg px-2.5 py-1.5 text-[10px] leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-violet-600 text-white"
-                      : msg.role === "system"
-                        ? "border border-zinc-200 bg-zinc-50 font-mono text-[9px]"
-                        : "border border-zinc-200 bg-zinc-50"
+                  key={i}
+                  className={`flex ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {msg.role !== "user" && (
-                    <div className="mb-0.5 text-[9px] font-semibold text-violet-600">
-                      {msg.role === "system" ? "System" : "Agent"}
-                    </div>
-                  )}
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <div
+                    className={`max-w-[92%] rounded-lg px-2.5 py-1.5 text-[10px] leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-violet-600 text-white"
+                        : msg.role === "system"
+                          ? "border border-zinc-200 bg-zinc-50 font-mono text-[9px]"
+                          : "border border-zinc-200 bg-zinc-50"
+                    }`}
+                  >
+                    {msg.role !== "user" && (
+                      <div className="mb-0.5 text-[9px] font-semibold text-violet-600">
+                        {msg.role === "system" ? "System" : "Shadow"}
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
           <div className="border-t border-zinc-200 p-2">
-            {visibleMessages < chatTranscript.length ? (
+            {actionState === "pending" || actionState === "editing" ? (
+              <div className="text-center text-[9px] text-zinc-400">
+                Review the Skill execution above
+              </div>
+            ) : visibleMessages < chatTranscript.length ? (
               <div className="flex gap-1.5">
                 <input
                   type="text"

@@ -8,6 +8,7 @@ const navItems = [
   { href: "/background", label: "Background" },
   { href: "/metrics", label: "Goals" },
   { href: "/scope", label: "Scope" },
+  { href: "/components", label: "Components" },
   { href: "/stories/expert-flow", label: "Expert Flow", separator: true },
   { href: "/stories/right-panel", label: "Right Panel" },
   { href: "/stories/session-skill", label: "Session → Skill" },

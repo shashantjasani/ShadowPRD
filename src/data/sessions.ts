@@ -189,29 +189,50 @@ export const sampleSession: Session = {
     "Customer: Hi, I need to add an expense to my QuickBooks. I bought some office supplies and I'm not sure how to enter it.\n\nAgent: Sure, I can help with that. Let me walk you through it. First, go to Expenses in the left menu.\n\nCustomer: Okay, I see it.\n\nAgent: Great. Now click New transaction and then Expense. You'll enter the payee — that's who you paid — the account you paid from, and the category. Then add the amount and a description if you want. Once that's done, hit Save and close.\n\nCustomer: Got it, that was easy. Thank you!",
 };
 
-export const chatTranscript = [
+export interface ChatMessage {
+  role: "system" | "user" | "agent" | "action" | "result";
+  content: string;
+  actionType?: "execute-skill";
+  skillName?: string;
+  preview?: { label: string; value: string }[];
+}
+
+export const chatTranscript: ChatMessage[] = [
   {
-    role: "system" as const,
+    role: "system",
     content:
       "TASK_SOLVED: true\n\nI checked the available skills in this environment. There is currently 1 skill available:\n\n- **quickbooks-online-create-expense-transaction** — a capability for creating an expense transaction in QuickBooks Online.",
   },
   {
-    role: "user" as const,
+    role: "user",
     content: "add an expense in quickbooks",
   },
   {
-    role: "agent" as const,
+    role: "agent",
     content:
-      'I can help you add an **Expense** in **QuickBooks Online**. To do it correctly, I need the expense details.\n\nSend me:\n\n1) **Payee**\n2) **Date**\n3) **Payment method/account** (e.g., Cash, Credit Card, Checking)\n4) **Category (expense account)** (e.g., Office Supplies, Meals, etc.)\n5) **Amount**\n6) **Description / memo**\n7) Optional: **Ref no.**, **Tax/VAT**, **Receipt attachment**\n\nIf you just want the manual steps in QBO:\n1) Go to **Expenses** (left menu)\n2) Click **New transaction** → **Expense**\n3) Choose **Payee** and **Payment method/account**\n4) Enter **Ref no.** (optional)\n5) In the line item: pick **Category**, add **Description**, enter **Amount**\n6) Click **Save and close**\n\nReply with the details and I\'ll tell you exactly what to enter where.',
+      "I can help with that. I have the Skill **quickbooks-online-create-expense-transaction** available.\n\nI need a few details:\n\n1) **Payee**\n2) **Payment method/account**\n3) **Category**\n4) **Amount**\n5) **Description**",
   },
   {
-    role: "user" as const,
+    role: "user",
     content:
-      "Payee: Office Depot, Date: today, Payment: Checking, Category: Office Supplies, Amount: $340, Description: Monthly office supply order",
+      "Payee: Office Depot, Payment: Checking, Category: Office Supplies, Amount: $340, Description: Monthly office supply order",
   },
   {
-    role: "agent" as const,
-    content:
-      'Great, here\'s exactly what to do:\n\n1) Go to **Expenses** in the left menu\n2) Click **New transaction** → **Expense**\n3) **Payee:** Office Depot\n4) **Payment account:** Checking\n5) **Date:** Feb 19, 2026\n6) In the line item:\n   - **Category:** Office Supplies\n   - **Description:** Monthly office supply order\n   - **Amount:** $340.00\n7) Click **Save and close**\n\nDone! Your expense is recorded.',
+    role: "action",
+    content: "I can execute this Skill for you. Here's what I'll do:",
+    actionType: "execute-skill",
+    skillName: "quickbooks-online-create-expense-transaction",
+    preview: [
+      { label: "Payee", value: "Office Depot" },
+      { label: "Payment account", value: "Checking" },
+      { label: "Date", value: "Feb 20, 2026" },
+      { label: "Category", value: "Office Supplies" },
+      { label: "Amount", value: "$340.00" },
+      { label: "Description", value: "Monthly office supply order" },
+    ],
+  },
+  {
+    role: "result",
+    content: "Skill executed successfully.\n\nExpense created: $340.00 to Office Depot from Checking.\nTransaction ID: TXN-2026-04817\n\nThe expense is now in your Expenses list.",
   },
 ];

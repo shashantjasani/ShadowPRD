@@ -13,7 +13,7 @@ const stories = [
     href: "/stories/right-panel",
     title: "Right Panel Chat",
     description:
-      "An agent opens the Shadow panel on any page and asks for help. Shadow finds the right Skill and walks them through it step by step.",
+      "An expert asks Shadow for help. Shadow offers to execute the Skill on their behalf — with a full preview and expert approval before anything happens.",
     badge: "Prototype B",
   },
   {
@@ -87,11 +87,12 @@ export default function Home() {
       </div>
 
       <div className="border-t border-border bg-surface">
-        <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-5">
+        <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-6">
           {[
             { href: "/background", label: "Background", desc: "Problem, what Shadow is, how it works" },
             { href: "/metrics", label: "Goals & Pilot", desc: "What we're trying to achieve" },
             { href: "/scope", label: "Product Scope", desc: "Chrome ext. vs Desktop client" },
+            { href: "/components", label: "Components", desc: "UI specs, interactions, guidelines" },
             { href: "/principles", label: "Principles", desc: "Privacy, trust, constraints" },
             { href: "/technical", label: "Technical Specs", desc: "Architecture, API, data models" },
           ].map((item) => (

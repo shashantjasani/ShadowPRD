@@ -90,10 +90,10 @@ export default function Home() {
         <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-5">
           {[
             { href: "/background", label: "Background", desc: "Problem, what Shadow is, how it works" },
+            { href: "/metrics", label: "Goals & Pilot", desc: "What we're trying to achieve" },
             { href: "/scope", label: "Product Scope", desc: "Chrome ext. vs Desktop client" },
             { href: "/principles", label: "Principles", desc: "Privacy, trust, constraints" },
             { href: "/technical", label: "Technical Specs", desc: "Architecture, API, data models" },
-            { href: "/metrics", label: "Goals & Pilot", desc: "What we're trying to achieve" },
           ].map((item) => (
             <Link
               key={item.href}

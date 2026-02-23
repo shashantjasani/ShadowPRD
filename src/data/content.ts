@@ -213,6 +213,28 @@ export const metrics = {
       ],
     },
   ],
+  referenceExperts: {
+    intro:
+      "Shadow is built for experts, so experts need to be in the room shaping it. We're enlisting a Reference Expert panel — 6 to 8 people representing different functions across the organization. This isn't a focus group we check in with quarterly. It's a tight, collaborative feedback loop that runs in cycles throughout development.",
+    why: [
+      "Direct, collaborative feedback from end-users beats surveys, second-hand reports, or assumptions about what experts need.",
+      "Keeping experts fully aware and able to influence direction and implementation means we build the right thing — not just a thing that works in a demo.",
+      "A small, diverse panel lets us stay nimble. We can test ideas, iterate, and course-correct in days instead of months.",
+      "Experts who help shape Shadow become advocates. When it's time to roll out, they're already bought in.",
+    ],
+    roles: [
+      { title: "Product Expert", detail: "Core product support — the primary user Shadow is designed for." },
+      { title: "Domain Expert", detail: "Deep knowledge in a specific area (e.g., payroll, tax, bookkeeping). Validates that Skills capture real expertise." },
+      { title: "Business Development Representative", detail: "Front-line sales perspective — how Shadow-generated knowledge could accelerate onboarding and customer conversations." },
+      { title: "Account Manager", detail: "Ongoing customer relationships — validates cross-expert continuity and the Context & Memory Service." },
+      { title: "Customer Success Manager", detail: "Post-sale experience — ensures Shadow fits into retention and expansion workflows." },
+      { title: "Full Service Accountant", detail: "Professional services perspective — validates Skills for complex, multi-step financial workflows." },
+      { title: "Bookkeeper", detail: "Day-to-day transactional work — ensures Skills cover the high-volume, repetitive tasks that benefit most from automation." },
+      { title: "Tax Professional Assistant", detail: "Seasonal, high-pressure workflows — tests Shadow under time-constrained, accuracy-critical conditions." },
+    ],
+    cadence:
+      "The panel meets in short, focused cycles — bi-weekly at minimum. Each cycle includes a demo of what's new, hands-on testing, and structured feedback. The panel's input directly shapes the next cycle's priorities. This isn't advisory; it's co-creation.",
+  },
   pilotScope:
     "Single product line (TurboTax or QuickBooks). 10–20 experts capturing, 20–30 agents consuming. 3-month window.",
   pilotPhases: [

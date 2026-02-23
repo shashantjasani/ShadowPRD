@@ -3,6 +3,7 @@
 import PageHeader from "@/components/layout/PageHeader";
 import EditBanner from "@/components/layout/EditBanner";
 import EditableText from "@/components/layout/EditableText";
+import EditableBulletList from "@/components/layout/EditableBulletList";
 import { metrics } from "@/data/content";
 
 export default function MetricsPage() {
@@ -11,7 +12,7 @@ export default function MetricsPage() {
       <PageHeader
         title="Goals & Pilot"
         description="What we're trying to achieve and how we'll know it's working."
-        badge="Section 6"
+        badge="Section 2"
       />
       <div className="mx-auto max-w-4xl px-4 py-16">
         <EditBanner filePath="src/data/content.ts → metrics" />
@@ -53,6 +54,58 @@ export default function MetricsPage() {
               </ul>
             </div>
           ))}
+        </div>
+
+        <div className="mb-14">
+          <h2 className="mb-4 text-xl font-bold">Reference Expert Panel</h2>
+          <EditableText
+            contentKey="metrics.referenceExperts.intro"
+            original={metrics.referenceExperts.intro}
+            className="mb-6 leading-relaxed text-muted"
+            multiline
+          />
+
+          <div className="mb-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-accent">
+              Why this matters
+            </h3>
+            <EditableBulletList
+              contentKey="metrics.referenceExperts.why"
+              original={metrics.referenceExperts.why}
+            />
+          </div>
+
+          <div className="mb-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-accent">
+              Panel composition (6–8 people)
+            </h3>
+            <div className="grid gap-3 md:grid-cols-2">
+              {metrics.referenceExperts.roles.map((role) => (
+                <div
+                  key={role.title}
+                  className="rounded-lg border border-border bg-surface p-4"
+                >
+                  <h4 className="mb-1 font-semibold text-sm">{role.title}</h4>
+                  <EditableText
+                    contentKey={`metrics.referenceExperts.roles.${role.title}`}
+                    original={role.detail}
+                    as="span"
+                    className="text-xs leading-relaxed text-muted"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border-l-4 border-accent bg-surface p-5">
+            <h4 className="mb-2 font-semibold text-accent">Cadence</h4>
+            <EditableText
+              contentKey="metrics.referenceExperts.cadence"
+              original={metrics.referenceExperts.cadence}
+              className="text-sm leading-relaxed"
+              multiline
+            />
+          </div>
         </div>
 
         <div className="mb-12 rounded-lg border border-border bg-surface p-5">

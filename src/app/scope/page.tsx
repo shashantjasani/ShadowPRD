@@ -3,6 +3,7 @@
 import PageHeader from "@/components/layout/PageHeader";
 import EditBanner from "@/components/layout/EditBanner";
 import EditableText from "@/components/layout/EditableText";
+import EditableBulletList from "@/components/layout/EditableBulletList";
 import { scope } from "@/data/content";
 
 export default function ScopePage() {
@@ -11,7 +12,7 @@ export default function ScopePage() {
       <PageHeader
         title="Product Scope"
         description="Two clients, one product. How the Chrome extension and desktop client divide the work."
-        badge="Section 2"
+        badge="Section 3"
       />
       <div className="mx-auto max-w-4xl px-4 py-16">
         <EditBanner filePath="src/data/content.ts → scope" />
@@ -34,14 +35,11 @@ export default function ScopePage() {
               original={scope.chromeExtension.owns}
               className="mb-4 text-sm text-muted"
             />
-            <ul className="space-y-2">
-              {scope.chromeExtension.bullets.map((b, i) => (
-                <li key={i} className="flex gap-2 text-sm leading-relaxed">
-                  <span className="mt-1 shrink-0 text-accent">&#8226;</span>
-                  {b}
-                </li>
-              ))}
-            </ul>
+            <EditableBulletList
+              contentKey="scope.chromeExtension.bullets"
+              original={scope.chromeExtension.bullets}
+              bulletColor="text-accent"
+            />
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-6">
@@ -56,14 +54,11 @@ export default function ScopePage() {
               original={scope.desktopClient.owns}
               className="mb-4 text-sm text-muted"
             />
-            <ul className="space-y-2">
-              {scope.desktopClient.bullets.map((b, i) => (
-                <li key={i} className="flex gap-2 text-sm leading-relaxed">
-                  <span className="mt-1 shrink-0 text-muted">&#8226;</span>
-                  {b}
-                </li>
-              ))}
-            </ul>
+            <EditableBulletList
+              contentKey="scope.desktopClient.bullets"
+              original={scope.desktopClient.bullets}
+              bulletColor="text-muted"
+            />
           </div>
         </div>
 

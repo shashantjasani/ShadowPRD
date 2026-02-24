@@ -505,7 +505,7 @@ function MockSkillsTab() {
   );
 
   return (
-    <MockRailFrame activeTab="Skills" tabs={["Record", "Chat", "Skills"]}>
+    <MockRailFrame activeTab="Skills">
       <div className="space-y-3">
         <div className="flex gap-4 text-[12px]">
           <span className="text-zinc-600"><strong className="text-accent">12</strong> Skills</span>

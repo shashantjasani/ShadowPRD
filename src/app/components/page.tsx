@@ -150,36 +150,79 @@ function MockRecordTab() {
    Section B: Chat Tab
    ═══════════════════════════════════════════════════ */
 
+function PlanStepCard({ step, number }: { step: { title: string; detail: string; tip?: string }; number: number }) {
+  return (
+    <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2.5 text-[12px] leading-relaxed max-w-[92%]">
+      <div className="flex items-start gap-2">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent mt-0.5">
+          {number}
+        </span>
+        <div>
+          <div className="font-semibold text-zinc-800">{step.title}</div>
+          <div className="mt-0.5 text-zinc-600">{step.detail}</div>
+          {step.tip && (
+            <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2 py-1 text-[11px] text-amber-700">
+              <span className="shrink-0 mt-0.5">💡</span>
+              <span>{step.tip}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MockChatTab() {
-  const [mode, setMode] = useState<"Plan" | "Agent">("Agent");
-  const [messages, setMessages] = useState([
-    { role: "user" as const, text: "How do I reconcile a bank account in QBO?" },
-    { role: "shadow" as const, text: "I found a Skill for that: qbo-reconcile-account. It has 6 steps. Want me to walk you through it, or execute it for you?" },
+  const [mode, setMode] = useState<"Plan" | "Agent">("Plan");
+  const [planStep, setPlanStep] = useState(0);
+  const [agentMessages, setAgentMessages] = useState([
+    { role: "user" as const, text: "Reconcile my business checking for January" },
+    { role: "shadow" as const, text: "I found a matching Skill: qbo-reconcile-account. I can execute this for you — let me pull up the details." },
   ]);
   const [showExecution, setShowExecution] = useState(false);
   const [executionState, setExecutionState] = useState<"preview" | "approved" | null>(null);
   const [input, setInput] = useState("");
 
-  function handleSend() {
+  const planSteps = [
+    { title: "Open Reconcile", detail: "Go to Bookkeeping in the left sidebar, then click Reconcile.", tip: "If you don't see Bookkeeping, check Settings → Navigation to enable it." },
+    { title: "Select the account", detail: "From the Account dropdown, choose Business Checking (****4521)." },
+    { title: "Set the statement period", detail: "Enter the ending date (Jan 31, 2026) and the ending balance from your bank statement.", tip: "Your bank statement balance is $24,817.50 based on the last uploaded statement." },
+    { title: "Match transactions", detail: "Compare each transaction against your bank statement. Check the box next to transactions that match. The difference at the top should reach $0.00." },
+    { title: "Resolve discrepancies", detail: "If the difference isn't zero, look for missing or duplicate transactions. You can sort by amount to find large mismatches faster.", tip: "Based on your pattern, you usually start with the largest discrepancies — that approach works well here." },
+    { title: "Finish", detail: "Once the difference is $0.00, click Finish now. QBO will save the reconciliation and mark the period as complete." },
+  ];
+
+  const visiblePlanSteps = planSteps.slice(0, planStep + 1);
+
+  function handlePlanNext() {
+    if (planStep < planSteps.length - 1) {
+      setPlanStep((s) => s + 1);
+    }
+  }
+
+  function handleAgentSend() {
     if (!input.trim()) return;
     const text = input.trim();
     setInput("");
-    setMessages((m) => [...m, { role: "user", text }]);
-    if (text.toLowerCase().includes("execute") || text.toLowerCase().includes("run") || text.toLowerCase().includes("do it")) {
-      setTimeout(() => { setShowExecution(true); setExecutionState("preview"); }, 400);
-    } else {
-      setTimeout(() => { setMessages((m) => [...m, { role: "shadow", text: "Got it! Let me know if you want me to execute the skill or walk through it step by step." }]); }, 600);
-    }
+    setAgentMessages((m) => [...m, { role: "user", text }]);
+    setTimeout(() => {
+      setShowExecution(true);
+      setExecutionState("preview");
+    }, 400);
   }
 
   function handleApprove() {
     setExecutionState("approved");
-    setTimeout(() => { setMessages((m) => [...m, { role: "shadow", text: "✅ Skill executed successfully. The reconciliation is complete — 12 transactions matched, 0 discrepancies." }]); setShowExecution(false); }, 1200);
+    setTimeout(() => {
+      setAgentMessages((m) => [...m, { role: "shadow", text: "✅ Reconciliation complete. 12 transactions matched, difference is $0.00. The period Jan 1–31 is now closed." }]);
+      setShowExecution(false);
+    }, 1200);
   }
 
   return (
     <MockRailFrame activeTab="Chat" tabs={["Record", "Chat", "Skills"]}>
       <div className="space-y-3">
+        {/* Mode toggle */}
         <div className="flex rounded-lg border border-zinc-200 overflow-hidden">
           {(["Plan", "Agent"] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)}
@@ -189,48 +232,105 @@ function MockChatTab() {
           ))}
         </div>
         <div className="text-[11px] text-zinc-400 leading-relaxed">
-          {mode === "Plan" ? "Shadow will explain steps but won't execute actions." : "Shadow can execute Skills on your behalf — with your approval."}
+          {mode === "Plan"
+            ? "Shadow walks you through each step — you perform the actions."
+            : "Shadow can execute Skills on your behalf — with your approval."}
         </div>
-        <div className="space-y-2.5 max-h-[280px] overflow-y-auto">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${msg.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-zinc-100 text-zinc-700 rounded-bl-sm"}`}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {showExecution && mode === "Agent" && (
-            <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-3">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-2">Skill Execution Preview</div>
-              <div className="text-[13px] font-semibold text-zinc-800 mb-2">qbo-reconcile-account</div>
-              <div className="space-y-1 mb-3">
-                {[{ field: "Account", value: "Business Checking (****4521)" }, { field: "Period", value: "Jan 1 – Jan 31, 2026" }, { field: "Match method", value: "Auto-match by amount + date" }].map((f) => (
-                  <div key={f.field} className="flex justify-between rounded bg-white px-2 py-1 text-[11px]">
-                    <span className="text-zinc-500">{f.field}</span>
-                    <span className="font-medium text-zinc-700">{f.value}</span>
-                  </div>
-                ))}
-              </div>
-              {executionState === "preview" ? (
-                <div className="flex gap-2">
-                  <button onClick={handleApprove} className="flex-1 rounded-lg bg-emerald-500 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-600">Approve & Execute</button>
-                  <button className="flex-1 rounded-lg bg-white border border-zinc-200 py-1.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50">Review & Edit</button>
-                  <button onClick={() => setShowExecution(false)} className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-[12px] text-zinc-400 hover:bg-zinc-50">Skip</button>
+
+        {/* ── Plan Mode ── */}
+        {mode === "Plan" && (
+          <>
+            <div className="space-y-2.5 max-h-[340px] overflow-y-auto">
+              {/* User message */}
+              <div className="flex justify-end">
+                <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                  How do I reconcile my business checking for January?
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-[12px] text-emerald-600 font-medium">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> Executing…
+              </div>
+
+              {/* Shadow intro */}
+              <div className="max-w-[92%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-zinc-100 text-zinc-700 rounded-bl-sm">
+                I found a Skill for this: <strong>qbo-reconcile-account</strong> (6 steps). Let me walk you through it one step at a time.
+              </div>
+
+              {/* Step cards */}
+              {visiblePlanSteps.map((step, i) => (
+                <PlanStepCard key={i} step={step} number={i + 1} />
+              ))}
+
+              {/* Completion message */}
+              {planStep >= planSteps.length - 1 && (
+                <div className="max-w-[92%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-zinc-100 text-zinc-700 rounded-bl-sm">
+                  That&apos;s all 6 steps! Let me know if you run into any issues or want me to switch to <strong>Agent Mode</strong> to handle it for you next time.
                 </div>
               )}
             </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
-          <button className="text-zinc-300 hover:text-zinc-500 transition-colors text-lg">📎</button>
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask Shadow anything…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
-          <button onClick={handleSend} className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${input.trim() ? "bg-accent text-white" : "bg-zinc-100 text-zinc-300"}`}>↑</button>
-        </div>
+
+            {/* Next step button */}
+            {planStep < planSteps.length - 1 ? (
+              <button
+                onClick={handlePlanNext}
+                className="w-full rounded-xl bg-accent/10 px-4 py-2.5 text-[13px] font-medium text-accent hover:bg-accent/20 transition-colors"
+              >
+                Show next step ({planStep + 2} of {planSteps.length})
+              </button>
+            ) : (
+              <button
+                onClick={() => setPlanStep(0)}
+                className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
+              >
+                ↻ Start over
+              </button>
+            )}
+          </>
+        )}
+
+        {/* ── Agent Mode ── */}
+        {mode === "Agent" && (
+          <>
+            <div className="space-y-2.5 max-h-[340px] overflow-y-auto">
+              {agentMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${msg.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-zinc-100 text-zinc-700 rounded-bl-sm"}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {showExecution && (
+                <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-2">Skill Execution Preview</div>
+                  <div className="text-[13px] font-semibold text-zinc-800 mb-2">qbo-reconcile-account</div>
+                  <div className="space-y-1 mb-3">
+                    {[{ field: "Account", value: "Business Checking (****4521)" }, { field: "Period", value: "Jan 1 – Jan 31, 2026" }, { field: "Match method", value: "Auto-match by amount + date" }].map((f) => (
+                      <div key={f.field} className="flex justify-between rounded bg-white px-2 py-1 text-[11px]">
+                        <span className="text-zinc-500">{f.field}</span>
+                        <span className="font-medium text-zinc-700">{f.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {executionState === "preview" ? (
+                    <div className="flex gap-2">
+                      <button onClick={handleApprove} className="flex-1 rounded-lg bg-emerald-500 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-600">Approve & Execute</button>
+                      <button className="flex-1 rounded-lg bg-white border border-zinc-200 py-1.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50">Review & Edit</button>
+                      <button onClick={() => setShowExecution(false)} className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-[12px] text-zinc-400 hover:bg-zinc-50">Skip</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-[12px] text-emerald-600 font-medium">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> Executing…
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
+              <button className="text-zinc-300 hover:text-zinc-500 transition-colors text-lg">📎</button>
+              <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAgentSend()}
+                placeholder="Ask Shadow anything…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
+              <button onClick={handleAgentSend} className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${input.trim() ? "bg-accent text-white" : "bg-zinc-100 text-zinc-300"}`}>↑</button>
+            </div>
+          </>
+        )}
       </div>
     </MockRailFrame>
   );
@@ -505,24 +605,25 @@ function useActiveSectionId(sectionIds: string[]) {
   const [activeId, setActiveId] = useState(sectionIds[0]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id);
+    function onScroll() {
+      const offset = 140;
+      let current = sectionIds[0];
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top <= offset) {
+          current = id;
         }
-      },
-      { rootMargin: "-100px 0px -60% 0px", threshold: 0 }
-    );
+      }
 
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+      setActiveId(current);
+    }
 
-    return () => observer.disconnect();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
   }, [sectionIds]);
 
   return activeId;

@@ -651,10 +651,22 @@ const proactiveThread: ProactiveMsg[] = [
   },
 ];
 
+const proactivePlanItems = [
+  { id: "pp1", text: "Open Bookkeeping → Reconcile in QBO", skill: "qbo-reconcile-account", done: false },
+  { id: "pp2", text: "Select Business Checking (****4521), set period Jan 1–31", skill: "qbo-reconcile-account", done: false },
+  { id: "pp3", text: "Auto-match transactions by amount + date", skill: "qbo-reconcile-account", done: false },
+  { id: "pp4", text: "Review unmatched — check the $247 Office Supplies line (David's prior issue)", skill: "qbo-reconcile-account", done: false },
+  { id: "pp5", text: "Resolve discrepancies, confirm difference is $0.00", skill: "qbo-reconcile-account", done: false },
+  { id: "pp6", text: "Finish reconciliation", skill: "qbo-reconcile-account", done: false },
+];
+
 function MockProactiveMessages() {
   const [visibleCount, setVisibleCount] = useState(2);
   const [reactions, setReactions] = useState<Record<string, boolean>>({});
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState("Chat");
+  const [planCreated, setPlanCreated] = useState(false);
+  const [planItems, setPlanItems] = useState(proactivePlanItems);
 
   const visible = proactiveThread.slice(0, visibleCount);
   const hasMore = visibleCount < proactiveThread.length;
@@ -669,7 +681,18 @@ function MockProactiveMessages() {
 
   function handleAction(id: string, result: string) {
     setActionResults((a) => ({ ...a, [id]: result }));
+    if (result === "plan") {
+      setPlanCreated(true);
+      setTimeout(() => setActiveTab("Plan"), 600);
+    }
   }
+
+  function togglePlanItem(id: string) {
+    setPlanItems((items) => items.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
+  }
+
+  const planDone = planItems.filter((i) => i.done).length;
+  const tabs = planCreated ? ["Record", "Chat", "Plan", "Skills"] : ["Record", "Chat", "Skills"];
 
   const badgeColors: Record<ProactiveBadge, string> = {
     "Customer history": "bg-blue-50 text-blue-600 border-blue-200",
@@ -678,107 +701,181 @@ function MockProactiveMessages() {
   };
 
   return (
-    <MockRailFrame activeTab="Chat" tabs={["Record", "Chat", "Skills"]}>
-      <div className="space-y-3">
-        {/* Context bar */}
-        <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] text-zinc-500">Watching: <strong className="text-zinc-700">Reconcile — Business Checking</strong></span>
-        </div>
-
-        {/* Chat stream */}
-        <div className="space-y-3 max-h-[380px] overflow-y-auto">
-          {visible.map((msg) => (
-            <div key={msg.id}>
-              {msg.role === "expert" ? (
-                <div className="flex justify-end">
-                  <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
-                    {msg.text}
-                  </div>
-                </div>
-              ) : (
-                <div className="max-w-[92%]">
-                  {msg.badge && (
-                    <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold mb-1 ${badgeColors[msg.badge]}`}>
-                      <span className="flex h-3 w-3 items-center justify-center rounded bg-current/10 text-[7px]">
-                        {msg.badge === "Customer history" ? "📋" : msg.badge === "Skill match" ? "⚡" : "👁"}
-                      </span>
-                      {msg.badge}
-                    </div>
-                  )}
-                  <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
-                    {msg.text}
-
-                    {msg.action && !actionResults[msg.id] && (
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          onClick={() => handleAction(msg.id, msg.action!.result)}
-                          className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
-                        >
-                          {msg.action.label}
-                        </button>
-                        <button className="rounded-lg bg-zinc-200 px-3 py-1 text-[11px] text-zinc-500 hover:bg-zinc-300 transition-colors">
-                          Not now
-                        </button>
-                      </div>
-                    )}
-
-                    {actionResults[msg.id] === "plan" && (
-                      <div className="mt-2 rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1.5 text-[11px] text-accent font-medium">
-                        Plan created — switch to Plan tab to review
-                      </div>
-                    )}
-                    {actionResults[msg.id] === "added" && (
-                      <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] text-emerald-700 font-medium">
-                        Added &quot;Pull Transaction Detail report&quot; as an optional step in your Skill
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Reaction bar */}
-                  <div className="flex items-center gap-2 mt-1 ml-1">
-                    <button
-                      onClick={() => toggleReaction(msg.id)}
-                      className={`rounded-full px-1.5 py-0.5 text-[11px] transition-colors ${
-                        reactions[msg.id] ? "bg-accent/10 text-accent" : "text-zinc-300 hover:text-zinc-500"
-                      }`}
-                    >
-                      👍
-                    </button>
-                    <span className="text-[10px] text-zinc-300">·</span>
-                    <span className="text-[10px] text-zinc-400">just now</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Show more / typing indicator */}
-        {hasMore ? (
-          <button
-            onClick={showNext}
-            className="w-full rounded-xl bg-accent/10 px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
-          >
-            Continue conversation →
-          </button>
-        ) : (
-          <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-            <span className="flex gap-0.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "300ms" }} />
-            </span>
-            Shadow is watching…
+    <MockRailFrame activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs}>
+      {/* ── Chat tab ── */}
+      {activeTab === "Chat" && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] text-zinc-500">Watching: <strong className="text-zinc-700">Reconcile — Business Checking</strong></span>
           </div>
-        )}
 
-        {/* Input */}
-        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
-          <input type="text" readOnly placeholder="Reply to Shadow…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-300">↑</div>
+          <div className="space-y-3 max-h-[340px] overflow-y-auto">
+            {visible.map((msg) => (
+              <div key={msg.id}>
+                {msg.role === "expert" ? (
+                  <div className="flex justify-end">
+                    <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                      {msg.text}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="max-w-[92%]">
+                    {msg.badge && (
+                      <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold mb-1 ${badgeColors[msg.badge]}`}>
+                        <span className="flex h-3 w-3 items-center justify-center rounded bg-current/10 text-[7px]">
+                          {msg.badge === "Customer history" ? "📋" : msg.badge === "Skill match" ? "⚡" : "👁"}
+                        </span>
+                        {msg.badge}
+                      </div>
+                    )}
+                    <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
+                      {msg.text}
+
+                      {msg.action && !actionResults[msg.id] && (
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            onClick={() => handleAction(msg.id, msg.action!.result)}
+                            className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
+                          >
+                            {msg.action.label}
+                          </button>
+                          <button className="rounded-lg bg-zinc-200 px-3 py-1 text-[11px] text-zinc-500 hover:bg-zinc-300 transition-colors">
+                            Not now
+                          </button>
+                        </div>
+                      )}
+
+                      {actionResults[msg.id] === "plan" && (
+                        <button
+                          onClick={() => setActiveTab("Plan")}
+                          className="mt-2 w-full rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1.5 text-[11px] text-accent font-medium hover:bg-accent/10 transition-colors text-left"
+                        >
+                          Plan created → Open Plan tab
+                        </button>
+                      )}
+                      {actionResults[msg.id] === "added" && (
+                        <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] text-emerald-700 font-medium">
+                          Added &quot;Pull Transaction Detail report&quot; as an optional step in your Skill
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-1 ml-1">
+                      <button
+                        onClick={() => toggleReaction(msg.id)}
+                        className={`rounded-full px-1.5 py-0.5 text-[11px] transition-colors ${
+                          reactions[msg.id] ? "bg-accent/10 text-accent" : "text-zinc-300 hover:text-zinc-500"
+                        }`}
+                      >
+                        👍
+                      </button>
+                      <span className="text-[10px] text-zinc-300">·</span>
+                      <span className="text-[10px] text-zinc-400">just now</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {hasMore ? (
+            <button
+              onClick={showNext}
+              className="w-full rounded-xl bg-accent/10 px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
+            >
+              Continue conversation →
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+              <span className="flex gap-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "300ms" }} />
+              </span>
+              Shadow is watching…
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
+            <input type="text" readOnly placeholder="Reply to Shadow…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-300">↑</div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ── Plan tab ── */}
+      {activeTab === "Plan" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold text-zinc-800">Reconciliation Plan</span>
+              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+                {planDone}/{planItems.length}
+              </span>
+            </div>
+            <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-500 uppercase tracking-wide">
+              qbo-reconcile-account
+            </span>
+          </div>
+
+          <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+              style={{ width: `${(planDone / planItems.length) * 100}%` }}
+            />
+          </div>
+
+          <div className="space-y-1">
+            {planItems.map((item, i) => (
+              <div
+                key={item.id}
+                onClick={() => togglePlanItem(item.id)}
+                className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                  item.done ? "border-emerald-200 bg-emerald-50/50 opacity-60" : "border-zinc-200 hover:border-accent/30 bg-white"
+                }`}
+              >
+                <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                  item.done ? "border-emerald-400 bg-emerald-400 text-white" : "border-zinc-300"
+                }`}>
+                  {item.done && (
+                    <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className={`text-[12px] leading-snug ${item.done ? "line-through text-zinc-400" : "text-zinc-700"}`}>
+                    <span className="text-zinc-400 mr-1.5">{i + 1}.</span>
+                    {item.text}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {planDone === planItems.length && (
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5 text-center">
+              <div className="text-[12px] font-semibold text-emerald-700">All steps complete!</div>
+              <div className="text-[11px] text-emerald-600 mt-0.5">Shadow can handle this automatically next time in Agent Mode.</div>
+            </div>
+          )}
+
+          <button
+            onClick={() => setActiveTab("Chat")}
+            className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
+          >
+            ← Back to Chat
+          </button>
+        </div>
+      )}
+
+      {/* ── Other tabs (placeholder) ── */}
+      {activeTab !== "Chat" && activeTab !== "Plan" && (
+        <div className="flex items-center justify-center py-12 text-[12px] text-zinc-400">
+          {activeTab} tab
+        </div>
+      )}
     </MockRailFrame>
   );
 }

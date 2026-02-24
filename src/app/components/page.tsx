@@ -611,72 +611,175 @@ function MockSkillsTab() {
 }
 
 /* ═══════════════════════════════════════════════════
-   Section D: Inline Suggestions
+   Section D: Proactive Messages
    ═══════════════════════════════════════════════════ */
 
-function MockInlineSuggestions() {
-  const [nudgeVisible, setNudgeVisible] = useState(true);
-  const [pulseClicked, setPulseClicked] = useState(false);
+type ProactiveBadge = "Customer history" | "Skill match" | "Pattern observed";
+
+interface ProactiveMsg {
+  id: string;
+  role: "shadow" | "expert";
+  text: string;
+  badge?: ProactiveBadge;
+  action?: { label: string; result: string };
+  reacted?: boolean;
+}
+
+const proactiveThread: ProactiveMsg[] = [
+  {
+    id: "p1",
+    role: "shadow",
+    badge: "Customer history",
+    text: "Heads up — David called about a $247 discrepancy in Supplies last month. That unmatched \"Office Supplies Co.\" line might be the same thing.",
+  },
+  { id: "p2", role: "expert", text: "Good catch, let me check that one first." },
+  {
+    id: "p3",
+    role: "shadow",
+    badge: "Skill match",
+    text: "You're on the reconcile page — I have a Skill for this (qbo-reconcile-account, 6 steps). Want me to plan it out or run it?",
+    action: { label: "Plan it", result: "plan" },
+  },
+  { id: "p4", role: "expert", text: "Plan it — I want to do this one manually." },
+  { id: "p5", role: "shadow", text: "Got it. I put together a plan — check the Plan tab when you're ready." },
+  {
+    id: "p6",
+    role: "shadow",
+    badge: "Pattern observed",
+    text: "I noticed you pull the Transaction Detail report after reconciling — you've done it the last 3 times. Want me to add that as a step in your Skill?",
+    action: { label: "Yes, add it", result: "added" },
+  },
+];
+
+function MockProactiveMessages() {
+  const [visibleCount, setVisibleCount] = useState(2);
+  const [reactions, setReactions] = useState<Record<string, boolean>>({});
+  const [actionResults, setActionResults] = useState<Record<string, string>>({});
+
+  const visible = proactiveThread.slice(0, visibleCount);
+  const hasMore = visibleCount < proactiveThread.length;
+
+  function showNext() {
+    setVisibleCount((c) => Math.min(c + 2, proactiveThread.length));
+  }
+
+  function toggleReaction(id: string) {
+    setReactions((r) => ({ ...r, [id]: !r[id] }));
+  }
+
+  function handleAction(id: string, result: string) {
+    setActionResults((a) => ({ ...a, [id]: result }));
+  }
+
+  const badgeColors: Record<ProactiveBadge, string> = {
+    "Customer history": "bg-blue-50 text-blue-600 border-blue-200",
+    "Skill match": "bg-accent/10 text-accent border-accent/20",
+    "Pattern observed": "bg-amber-50 text-amber-600 border-amber-200",
+  };
 
   return (
-    <div className="w-full rounded-xl border border-zinc-200 bg-white shadow-md overflow-hidden text-[13px]">
-      <div className="flex items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-2">
-        <span className="text-[11px] text-zinc-400">qbo.intuit.com/app/reconcile</span>
-        <span className="ml-auto flex items-center gap-1.5">
-          <button onClick={() => setPulseClicked(!pulseClicked)} className="relative flex h-6 w-6 items-center justify-center rounded bg-accent text-[9px] font-bold text-white">
-            S
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse border border-white" />
-          </button>
-        </span>
-      </div>
-      <div className="relative p-4">
-        <div className="space-y-3">
-          <div className="text-[14px] font-semibold text-zinc-800">Reconcile — Business Checking</div>
-          <div className="flex gap-3 text-[11px] text-zinc-500"><span>Period: Jan 1 – Jan 31</span><span>Balance: $24,817.50</span></div>
-          <div className="rounded-lg border border-zinc-200 p-2.5">
-            <div className="mb-1.5 text-[11px] font-medium text-zinc-600">Transactions to match (14)</div>
-            <div className="space-y-1">
-              {[{ desc: "Office Supplies Co.", amt: "$247.00", status: "unmatched" }, { desc: "Cloud Software Inc.", amt: "$89.99", status: "matched" }, { desc: "Business Insurance", amt: "$1,200.00", status: "unmatched" }].map((tx) => (
-                <div key={tx.desc} className="flex items-center justify-between rounded bg-zinc-50 px-2 py-1 text-[11px]">
-                  <span className="text-zinc-600">{tx.desc}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-zinc-700 font-medium">{tx.amt}</span>
-                    <span className={`rounded px-1 py-0.5 text-[9px] font-medium ${tx.status === "matched" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>{tx.status}</span>
+    <MockRailFrame activeTab="Chat" tabs={["Record", "Chat", "Skills"]}>
+      <div className="space-y-3">
+        {/* Context bar */}
+        <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-zinc-500">Watching: <strong className="text-zinc-700">Reconcile — Business Checking</strong></span>
+        </div>
+
+        {/* Chat stream */}
+        <div className="space-y-3 max-h-[380px] overflow-y-auto">
+          {visible.map((msg) => (
+            <div key={msg.id}>
+              {msg.role === "expert" ? (
+                <div className="flex justify-end">
+                  <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                    {msg.text}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          {nudgeVisible && (
-            <div className="absolute right-3 top-[90px] w-[220px] rounded-lg border border-accent/30 bg-white shadow-lg p-2.5">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <div className="flex items-center gap-1 text-[9px] font-semibold text-accent">
-                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded bg-accent text-[7px] text-white">S</span>
-                  From customer history
+              ) : (
+                <div className="max-w-[92%]">
+                  {msg.badge && (
+                    <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold mb-1 ${badgeColors[msg.badge]}`}>
+                      <span className="flex h-3 w-3 items-center justify-center rounded bg-current/10 text-[7px]">
+                        {msg.badge === "Customer history" ? "📋" : msg.badge === "Skill match" ? "⚡" : "👁"}
+                      </span>
+                      {msg.badge}
+                    </div>
+                  )}
+                  <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
+                    {msg.text}
+
+                    {msg.action && !actionResults[msg.id] && (
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={() => handleAction(msg.id, msg.action!.result)}
+                          className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
+                        >
+                          {msg.action.label}
+                        </button>
+                        <button className="rounded-lg bg-zinc-200 px-3 py-1 text-[11px] text-zinc-500 hover:bg-zinc-300 transition-colors">
+                          Not now
+                        </button>
+                      </div>
+                    )}
+
+                    {actionResults[msg.id] === "plan" && (
+                      <div className="mt-2 rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1.5 text-[11px] text-accent font-medium">
+                        Plan created — switch to Plan tab to review
+                      </div>
+                    )}
+                    {actionResults[msg.id] === "added" && (
+                      <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] text-emerald-700 font-medium">
+                        Added &quot;Pull Transaction Detail report&quot; as an optional step in your Skill
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reaction bar */}
+                  <div className="flex items-center gap-2 mt-1 ml-1">
+                    <button
+                      onClick={() => toggleReaction(msg.id)}
+                      className={`rounded-full px-1.5 py-0.5 text-[11px] transition-colors ${
+                        reactions[msg.id] ? "bg-accent/10 text-accent" : "text-zinc-300 hover:text-zinc-500"
+                      }`}
+                    >
+                      👍
+                    </button>
+                    <span className="text-[10px] text-zinc-300">·</span>
+                    <span className="text-[10px] text-zinc-400">just now</span>
+                  </div>
                 </div>
-                <button onClick={() => setNudgeVisible(false)} className="text-zinc-300 hover:text-zinc-500 text-[12px] leading-none">×</button>
-              </div>
-              <p className="text-[11px] text-zinc-600 leading-relaxed">David had a $247 discrepancy in Supplies last time — the unmatched &quot;Office Supplies Co.&quot; may be related.</p>
-              <button onClick={() => setNudgeVisible(false)} className="mt-1.5 text-[10px] font-medium text-accent hover:underline">Show in Right Panel →</button>
+              )}
             </div>
-          )}
-          <div className="rounded-lg border border-accent/20 bg-accent/5 px-3 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[11px]"><span className="text-accent">⚡</span><span className="text-zinc-600">Skill match: <strong className="text-accent">qbo-reconcile-account</strong></span></div>
-            <button className="rounded bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent hover:bg-accent/20">Open</button>
-          </div>
-          {pulseClicked && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-zinc-600">
-              <span className="font-medium text-amber-700">Shadow noticed:</span> You checked the Transaction Detail report during the last 3 reconciliations. Want me to add it as a step?
-              <div className="mt-1.5 flex gap-2">
-                <button onClick={() => setPulseClicked(false)} className="rounded bg-accent px-2 py-0.5 text-[10px] font-medium text-white">Yes, add it</button>
-                <button onClick={() => setPulseClicked(false)} className="rounded bg-zinc-200 px-2 py-0.5 text-[10px] text-zinc-600">Not now</button>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
-        {!nudgeVisible && <button onClick={() => setNudgeVisible(true)} className="mt-3 text-[11px] text-accent hover:underline">↻ Show nudge again</button>}
+
+        {/* Show more / typing indicator */}
+        {hasMore ? (
+          <button
+            onClick={showNext}
+            className="w-full rounded-xl bg-accent/10 px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
+          >
+            Continue conversation →
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+            <span className="flex gap-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </span>
+            Shadow is watching…
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
+          <input type="text" readOnly placeholder="Reply to Shadow…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-300">↑</div>
+        </div>
       </div>
-    </div>
+    </MockRailFrame>
   );
 }
 
@@ -688,7 +791,7 @@ const sectionMockups: Record<string, React.ReactNode> = {
   "record-tab": <MockRecordTab />,
   "chat-tab": <MockChatTab />,
   "skills-tab": <MockSkillsTab />,
-  "inline-suggestions": <MockInlineSuggestions />,
+  "inline-suggestions": <MockProactiveMessages />,
 };
 
 function StatesList({ states }: { states: string[] }) {

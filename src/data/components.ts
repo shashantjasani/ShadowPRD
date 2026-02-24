@@ -538,97 +538,101 @@ export const componentSections: ComponentSection[] = [
   {
     id: "inline-suggestions",
     letter: "D",
-    title: "Inline Suggestions",
+    title: "Proactive Messages",
     description:
-      "Inline suggestions are contextual nudges that appear directly on the expert's screen — overlaid on the page they're working on, not just in the Right Panel. Think of Cursor's ghost text: it appears right where you're typing, exactly when it's relevant. Shadow's equivalent is a subtle callout at the point of action — when the expert is about to navigate, click, or fill in a field.",
+      "Shadow and the expert interact like two colleagues on Slack who are looking at the same screen. Shadow doesn't overlay floating UI elements on the page — it communicates through the chat. When Shadow notices something relevant (a matching Skill, a customer history detail, a behavioral pattern), it sends a proactive message in the conversation, just like a colleague would tap you and say 'Hey, heads up.' The chat is always the single channel of communication.",
     subSections: [
       {
-        id: "e-contextual-nudges",
-        title: "Contextual Nudges",
+        id: "e-proactive-triggers",
+        title: "When Shadow Speaks Up",
         description:
-          "Proactive suggestions that appear on the expert's screen during a call, anchored to the UI element or workflow step they relate to.",
+          "Shadow monitors the expert's context — the page they're on, the customer they're helping, the actions they're taking — and proactively sends messages when it has something useful to share. These aren't system alerts; they're conversational.",
         specs: [
           {
-            id: "e-nudge-type",
-            name: "Nudge types",
+            id: "e-message-types",
+            name: "Message types",
             description:
-              "Three categories of inline suggestion: (1) Behavioral — based on what other experts typically do at this point ('Experts usually verify the reconciliation date here'), (2) Contextual — based on the current customer's history ('David mentioned a $247 discrepancy in Supplies last time'), (3) Skill-aware — suggesting a relevant Skill step ('You have a Skill for this — want to run it?').",
+              "Three flavors of proactive message: (1) Context recall — Shadow surfaces relevant history ('Heads up — David called about a $247 discrepancy in Supplies last month. That unmatched Office Supplies line might be related.'), (2) Skill match — Shadow notices a relevant Skill ('You're on the reconcile page — I have a Skill for this. Want me to walk you through it or run it?'), (3) Pattern observation — Shadow notices something the expert does repeatedly ('I've seen you pull the Transaction Detail report during reconciliations the last 3 times. Want me to add that as a step in your Skill?').",
             guidelines: [
-              "Nudges appear as small, dismissible callouts near the relevant UI element — never blocking the expert's work.",
-              "Each nudge includes a source indicator: 'From your patterns', 'From customer history', or 'Skill: qbo-reconcile-account'.",
-              "Maximum 1 nudge visible at a time. Queue additional nudges and show them sequentially.",
-              "Nudges auto-dismiss after 8 seconds if not interacted with.",
+              "Messages should read like a helpful colleague, not a system notification.",
+              "Each proactive message is clearly labeled with a source tag so the expert knows why Shadow is speaking up: 'Customer history', 'Skill match', or 'Pattern observed'.",
+              "The expert can reply naturally — ask follow-up questions, say 'tell me more', or dismiss with 'got it'.",
+              "Shadow respects conversation flow — it won't interrupt the expert mid-thought. If the expert is actively typing, Shadow queues its message.",
             ],
           },
           {
-            id: "e-nudge-appearance",
-            name: "Visual treatment",
+            id: "e-message-frequency",
+            name: "Cadence & restraint",
             description:
-              "A compact floating card with a subtle shadow, anchored near the relevant element. Uses Shadow's brand accent color for the left border. Contains 1-2 lines of text, an optional action button, and a dismiss X.",
-            states: [
-              "Appearing: fade-in with a slight slide-up animation.",
-              "Visible: static, positioned near the anchor element. Repositions if the page scrolls.",
-              "Interacted: if the expert clicks the action button, the nudge transitions to the Right Panel for follow-through.",
-              "Dismissed: fade-out on click of X or after auto-dismiss timer.",
-            ],
+              "Shadow is a thoughtful colleague, not a noisy one. It limits proactive messages to avoid fatigue — typically no more than 2-3 unsolicited messages per call. It prioritizes high-confidence, high-value observations over exhaustive commentary.",
             guidelines: [
-              "Never cover critical UI elements (form fields, buttons the expert is about to click).",
-              "Position priority: below the element, then above, then to the side.",
-              "The expert can disable inline suggestions entirely from the Right Panel settings.",
+              "Maximum 2-3 proactive messages per customer engagement unless the expert asks for more.",
+              "Higher confidence → more likely to surface. Low-confidence observations stay quiet.",
+              "If the expert dismisses proactive messages repeatedly, Shadow reduces frequency for that session.",
+              "The expert can adjust proactivity level in settings: 'Quiet', 'Balanced', or 'Chatty'.",
             ],
           },
         ],
       },
       {
-        id: "e-learning-indicators",
-        title: "Learning Indicators",
+        id: "e-visual-treatment",
+        title: "How Proactive Messages Look in Chat",
         description:
-          "Subtle visual signals that show Shadow is observing and learning — building trust that the system is paying attention without being intrusive.",
+          "Proactive messages appear in the same chat stream as regular conversation, but with a subtle visual distinction so the expert can tell at a glance that Shadow initiated the message (vs. responding to a question).",
         specs: [
           {
-            id: "e-learning-pulse",
-            name: "Activity pulse",
+            id: "e-proactive-styling",
+            name: "Visual differentiation",
             description:
-              "A small, pulsing dot on the Shadow extension icon that indicates Shadow noticed something noteworthy — a new pattern, a deviation from usual behavior, or a potential Skill opportunity. Clicking it opens a brief explanation in the Right Panel.",
+              "Proactive messages share the same chat bubble style as Shadow's regular responses but include a small source badge above the message (e.g., 'Customer history', 'Skill match'). An optional left-border accent or icon distinguishes them from direct replies without breaking the chat flow.",
+            states: [
+              "Appeared: message fades in with a subtle slide-up, like a new Slack message.",
+              "Actionable: if the message contains a suggested action (open a Skill, add a step), an inline button appears below the text.",
+              "Acknowledged: the expert can react (thumbs up) or reply — either way, the conversation continues naturally.",
+              "Muted: if dismissed or ignored, the message stays in history but is visually de-emphasized.",
+            ],
             guidelines: [
-              "The pulse is gentle and non-distracting — not an alert, a signal.",
-              "At most 2-3 pulses per session to avoid fatigue.",
-              "Each pulse links to a specific insight: 'I noticed you used a different approach for this reconciliation — want me to remember it?'",
+              "Proactive messages should never look like error banners, system toasts, or modal alerts.",
+              "They belong in the conversation — same font, same bubble shape, just a small badge to indicate Shadow spoke first.",
+              "Action buttons within proactive messages should use the same patterns as other chat interactions (Plan it, Run it, Show details).",
             ],
           },
           {
-            id: "e-skill-match",
-            name: "Skill match indicator",
+            id: "e-attention-dot",
+            name: "Unread indicator",
             description:
-              "When the expert navigates to a page or starts an action that matches a known Skill, a brief indicator appears: 'Skill available: qbo-create-expense'. Clicking it opens the Skill in the Right Panel.",
-            states: [
-              "Matched: small banner at the top of the Right Rail — 'Skill match: [skill name]'.",
-              "Clicked: opens the Skill detail in the Right Panel with an option to execute (Agent Mode) or view steps (Plan Mode).",
-              "Dismissed: expert closes it, won't show again for this Skill on this page during this session.",
-            ],
+              "If the expert has the Right Panel minimized or is on a different tab when Shadow sends a proactive message, a subtle dot appears on the Shadow extension icon — like an unread badge on Slack. It signals 'I have something for you' without demanding attention.",
             guidelines: [
-              "Only show for Skills with high confidence match (>80% step overlap with current context).",
-              "Don't show for Skills the expert just executed — avoid redundancy.",
+              "The dot is small and non-distracting — a signal, not an alarm.",
+              "Clicking it opens the Right Panel to the latest proactive message.",
+              "The dot clears once the expert views the message.",
             ],
           },
         ],
       },
       {
-        id: "e-phase2-note",
-        title: "Rollout Considerations",
+        id: "e-conversation-examples",
+        title: "Conversation Patterns",
         description:
-          "Inline suggestions require deeper page-level integration and confidence calibration. They're spec'd here because the component model needs to account for them — the Right Rail's layout, the event system, and the Skill matching engine all need to be designed with inline suggestions in mind, even before they ship.",
+          "Examples of how proactive messages weave naturally into the chat — showing the Slack-like dynamic between Shadow and the expert.",
         specs: [
           {
-            id: "e-prereqs",
-            name: "Prerequisites",
+            id: "e-example-context",
+            name: "Context recall mid-call",
             description:
-              "Before inline suggestions can ship, the foundation needs to be in place: (1) a reliable Skill matching engine with known accuracy, (2) enough Expert Profile depth to generate behavioral nudges, (3) expert trust — measured by continued usage and positive feedback on Right Panel suggestions.",
-            guidelines: [
-              "Early data collection directly feeds suggestion quality.",
-              "The Right Panel serves as a proving ground — if experts find its suggestions valuable, inline suggestions are the natural extension.",
-              "Inline suggestions should launch behind a feature flag, opt-in only, with the expert panel providing initial feedback.",
-            ],
+              "Expert is on the reconcile page. Shadow sends: 'Heads up — David mentioned a $247 issue with Supplies last call. That unmatched Office Supplies Co. line ($247.00) might be the same thing.' Expert replies: 'Good catch, let me check.' The conversation continues naturally from there.",
+          },
+          {
+            id: "e-example-skill",
+            name: "Skill suggestion",
+            description:
+              "Expert navigates to the invoice page. Shadow sends: 'I have a Skill for creating invoices from estimates — want me to pull it up?' Expert replies: 'Yeah, plan it out for me.' Shadow responds with a Plan Mode checklist.",
+          },
+          {
+            id: "e-example-pattern",
+            name: "Pattern observation",
+            description:
+              "After the expert finishes a reconciliation, Shadow sends: 'I noticed you always pull the Transaction Detail report after reconciling. Want me to add that as a step in your qbo-reconcile-account Skill?' Expert replies: 'Yes, but make it optional — I only do it for business checking.' Shadow updates the Skill and confirms.",
           },
         ],
       },

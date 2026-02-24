@@ -27,8 +27,8 @@ function MockRailFrame({
   return (
     <div className="w-full rounded-xl border border-zinc-200 bg-white shadow-md overflow-hidden text-[13px]">
       <div className="flex items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-2.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[10px] font-bold text-white">S</span>
-        <span className="font-semibold text-zinc-700">Shadow</span>
+        <span className="flex h-5 w-5 items-center justify-center rounded bg-violet-600 text-[9px] font-bold text-white">S</span>
+        <span className="text-[11px] font-semibold text-zinc-800">Shadow</span>
         <span className="ml-auto flex items-center gap-1 text-[11px] text-emerald-600">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Connected
@@ -40,8 +40,8 @@ function MockRailFrame({
             <button
               key={tab}
               onClick={() => onTabChange?.(tab)}
-              className={`flex-1 px-3 py-2 text-center text-[12px] font-medium transition-colors ${
-                activeTab === tab ? "border-b-2 border-accent text-accent" : "text-zinc-400 hover:text-zinc-600"
+              className={`flex-1 py-1.5 text-center text-[11px] font-medium transition-colors ${
+                activeTab === tab ? "border-b-2 border-violet-600 text-violet-600" : "text-zinc-400 hover:text-zinc-600"
               }`}
             >
               {tab}

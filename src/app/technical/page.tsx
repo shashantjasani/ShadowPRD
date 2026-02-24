@@ -1,6 +1,6 @@
 import PageHeader from "@/components/layout/PageHeader";
 import EditBanner from "@/components/layout/EditBanner";
-import { architecture, eventSchema, apiEndpoints, dataModels } from "@/data/technical";
+import { architecture, intelligencePipeline, eventSchema, apiEndpoints, dataModels } from "@/data/technical";
 
 export default function TechnicalPage() {
   return (
@@ -76,6 +76,50 @@ export default function TechnicalPage() {
                 </code>
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Intelligence Pipeline */}
+        <div className="mb-16">
+          <h2 className="mb-4 text-2xl font-bold">Shadow Intelligence Pipeline</h2>
+          <p className="mb-6 leading-relaxed text-muted">
+            {intelligencePipeline.description}
+          </p>
+
+          <div className="space-y-0">
+            {intelligencePipeline.stages.map((stage, i) => (
+              <div key={stage.name} className="relative">
+                <div className="flex items-stretch gap-4">
+                  {/* Step number + connector */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
+                      {i + 1}
+                    </div>
+                    {i < intelligencePipeline.stages.length - 1 && (
+                      <div className="w-px flex-1 bg-accent/20" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="mb-4 flex-1 rounded-lg border border-border bg-surface p-4">
+                    <div className="mb-1 flex items-center gap-2">
+                      <h3 className="font-semibold">{stage.name}</h3>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        stage.location.includes("Edge")
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {stage.location}
+                      </span>
+                    </div>
+                    <p className="mb-2 text-sm text-muted leading-relaxed">{stage.description}</p>
+                    <div className="text-xs text-zinc-500">
+                      <span className="font-medium text-zinc-600">Output:</span> {stage.output}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -28,14 +28,15 @@ const stories = [
 export default function Home() {
   return (
     <>
+      {/* Hero */}
       <div className="flex min-h-[70vh] flex-col items-center justify-center bg-surface px-4 text-center">
         <span className="mb-6 inline-block rounded-full bg-accent-light px-4 py-1.5 text-sm font-medium text-accent">
           Interactive PRD
         </span>
-        <h1 className="mb-4 text-6xl font-bold tracking-tight">
+        <h1 className="mb-2 text-6xl font-bold tracking-tight">
           {hero.headline}
         </h1>
-        <p className="mb-2 text-2xl font-medium text-muted">
+        <p className="mb-4 text-2xl font-semibold text-accent">
           {hero.subline}
         </p>
         <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted">
@@ -49,14 +50,43 @@ export default function Home() {
             Read the PRD
           </Link>
           <Link
-            href="/stories/expert-flow"
+            href="/day-in-the-life"
             className="rounded-lg border border-border px-6 py-3 font-medium transition-colors hover:bg-accent-light"
           >
-            See the Prototypes
+            See a Day in the Life
           </Link>
         </div>
       </div>
 
+      {/* Analogy table */}
+      <div className="border-t border-border bg-white">
+        <div className="mx-auto max-w-3xl px-4 py-16">
+          <h2 className="mb-2 text-center text-sm font-semibold uppercase tracking-wider text-accent">
+            The Analogy
+          </h2>
+          <p className="mb-8 text-center text-2xl font-bold tracking-tight">
+            If Cursor is for Developers, Shadow is for Experts
+          </p>
+          <div className="overflow-hidden rounded-xl border border-border">
+            <div className="grid grid-cols-2 bg-zinc-50 text-sm font-semibold text-zinc-600">
+              <div className="border-b border-r border-border px-4 py-3">Cursor (Developers)</div>
+              <div className="border-b border-border px-4 py-3">Shadow (Intuit Experts)</div>
+            </div>
+            {hero.analogy.map((row, i) => (
+              <div key={i} className="grid grid-cols-2 text-sm">
+                <div className={`border-r border-border px-4 py-2.5 text-zinc-500 ${i < hero.analogy.length - 1 ? "border-b" : ""}`}>
+                  {row.cursor}
+                </div>
+                <div className={`px-4 py-2.5 font-medium text-zinc-800 ${i < hero.analogy.length - 1 ? "border-b border-border" : ""}`}>
+                  {row.shadow}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Prototypes */}
       <div className="mx-auto max-w-5xl px-4 py-20">
         <h2 className="mb-2 text-center text-sm font-semibold uppercase tracking-wider text-accent">
           User Stories & Prototypes
@@ -86,25 +116,27 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Bottom nav grid */}
       <div className="border-t border-border bg-surface">
-        <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-6">
+        <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-4 lg:grid-cols-7">
           {[
-            { href: "/background", label: "Background", desc: "Problem, what Shadow is, how it works" },
-            { href: "/metrics", label: "Goals & Pilot", desc: "What we're trying to achieve" },
-            { href: "/scope", label: "Product Scope", desc: "Chrome ext. vs Desktop client" },
-            { href: "/components", label: "Components", desc: "UI specs, interactions, guidelines" },
-            { href: "/principles", label: "Principles", desc: "Privacy, trust, constraints" },
-            { href: "/technical", label: "Technical Specs", desc: "Architecture, API, data models" },
+            { href: "/background", label: "Background", desc: "Problem & how Shadow works" },
+            { href: "/metrics", label: "Goals & Pilot", desc: "What we're proving" },
+            { href: "/scope", label: "Scope", desc: "Chrome ext. vs Desktop" },
+            { href: "/components", label: "Components", desc: "UI specs & interactions" },
+            { href: "/day-in-the-life", label: "Day in the Life", desc: "Full expert shift" },
+            { href: "/principles", label: "Principles", desc: "Privacy & trust" },
+            { href: "/technical", label: "Technical", desc: "Architecture & APIs" },
           ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="group rounded-lg border border-border p-5 transition-all hover:border-accent hover:shadow-md"
+              className="group rounded-lg border border-border p-4 transition-all hover:border-accent hover:shadow-md"
             >
-              <h4 className="mb-1 font-semibold group-hover:text-accent">
+              <h4 className="mb-1 text-sm font-semibold group-hover:text-accent">
                 {item.label}
               </h4>
-              <p className="text-sm text-muted">{item.desc}</p>
+              <p className="text-xs text-muted">{item.desc}</p>
             </Link>
           ))}
         </div>

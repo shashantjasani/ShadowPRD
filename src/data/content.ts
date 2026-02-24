@@ -4,9 +4,18 @@ export const siteDescription =
 
 export const hero = {
   headline: "Shadow",
-  subline: "Learning by Watching",
+  subline: "Cursor for Intuit Experts",
   description:
-    "Capture how experts work. Turn it into reusable Skills. Serve it up where people need it. Today via a Chrome extension; tomorrow across the full desktop.",
+    "Cursor changed how developers build software — an AI companion embedded in their editor that learns their codebase, suggests what to do next, and executes on their behalf. Shadow does the same thing for Intuit Experts. It sits inside the tools they already use, learns how they work, and turns that knowledge into reusable Skills that any expert or agent can run.",
+  analogy: [
+    { cursor: "IDE / Code Editor", shadow: "Chrome Extension + Desktop Client" },
+    { cursor: "Codebase indexing", shadow: "Session capture & Expert Profile" },
+    { cursor: "Autocomplete / Ghost text", shadow: "Inline suggestions & contextual nudges" },
+    { cursor: "Chat panel (Plan / Agent mode)", shadow: "Right Panel Chat (Plan / Agent mode)" },
+    { cursor: "Rules & .cursorrules", shadow: "Expert preferences & personalization" },
+    { cursor: "Agent Skills", shadow: "Shadow Skills (core + personalized steps)" },
+    { cursor: "Multi-file edits", shadow: "Multi-step workflow automation" },
+  ],
 };
 
 export const background = {
@@ -137,11 +146,12 @@ export const scope = {
     ],
   },
   desktopClient: {
-    name: "Desktop Client (Full Workstation)",
-    owns: "Everything across the machine — all apps, system audio, multiple windows.",
+    name: "Desktop Client (Cross-Application Workflows)",
+    owns: "The workflows Chrome can't see — experts switching between QBO, Slack, Excel, a CRM, and desktop apps in a single customer interaction.",
     bullets: [
-      "Screen, system audio (transcript only leaves device), event logs, key frames. Optional full video for high-value sessions.",
-      "PII detected and redacted on-device before any upload.",
+      "Cross-application capture: screen recording, system audio (transcript only leaves device), window focus tracking, and application-level events across all open apps.",
+      "The Desktop Client's unique value is seeing the full workflow when an expert leaves Chrome — copying data into a spreadsheet, checking a Slack thread, updating a CRM record, or running a desktop calculator.",
+      "PII detected and redacted on-device before any upload. Raw audio never leaves the machine.",
       "Shadow Flows library, coaching dashboard, case summarization into SFDC/CRM.",
       "IT-deployed app (Windows/macOS), system tray. Same consent and privacy rules as the extension.",
     ],
@@ -243,6 +253,53 @@ export const metrics = {
     "Apr 2026 — Scale: Skill library growing, agents start consuming shared Skills.",
     "May 2026 — Measure: Evaluate both goals, pilot retrospective, plan next phase.",
   ],
+  adoptionCurve: [
+    {
+      period: "Day 1",
+      title: "Instant value",
+      description:
+        "Expert installs the Chrome Extension, signs in, and takes their first call with Shadow. After the call, Shadow auto-generates the wrap-up summary and populates the CRM fields. The expert saves 3-4 minutes on their first call. That's the hook.",
+    },
+    {
+      period: "Week 1",
+      title: "Skills start accumulating",
+      description:
+        "After 10-15 calls, Shadow has proposed several Skills. The expert has validated 3-4 of them. The Right Panel starts recognizing incoming topics and fetching relevant Skills pre-call. Shadow feels useful, not just novel.",
+    },
+    {
+      period: "Month 1",
+      title: "Shadow knows you",
+      description:
+        "The Expert Profile has enough depth that Shadow's suggestions feel personalized — not generic. Skills reflect the expert's specific patterns and shortcuts. Wrap-up is nearly fully automated. The expert starts using Agent Mode to execute Skills directly.",
+    },
+    {
+      period: "Month 3",
+      title: "Your expertise scales beyond you",
+      description:
+        "The expert has 15-20 validated Skills. Several have been proposed and approved for Intuit-wide use. Other experts and agents are consuming Skills this expert created. The expert's impact extends beyond the calls they personally handle.",
+    },
+  ],
+  whereThisGoes: {
+    intro:
+      "Phase 1 builds the foundation — capture, Skills, personalization, expert validation. What comes next depends on the depth and quality of what we collect, but the trajectory is clear:",
+    items: [
+      {
+        title: "HI Twins",
+        description:
+          "As Expert Profiles accumulate enough sessions, validated Skills, and behavioral patterns, they reach a threshold where they can represent an expert's decision-making independently. An HI Twin is a digital version of an expert that can handle routine cases, answer questions, and execute Skills — supervised but not manually driven.",
+      },
+      {
+        title: "Agent Gym",
+        description:
+          "Skills and session data become training material for AI agents. Instead of hand-crafted prompts, agents learn from real expert behavior — how to navigate a product, when to escalate, what questions to ask. The Gym is where agents practice on real workflows before handling live customers.",
+      },
+      {
+        title: "Autonomous execution",
+        description:
+          "Today, every Skill execution requires expert approval. As trust is established through consistent quality — measured by execution success rate, override frequency, and expert satisfaction — Shadow can begin executing low-risk, well-validated Skills autonomously, with the expert notified after the fact.",
+      },
+    ],
+  },
   notInPilot: [
     "AI agent training pipeline (Agent Gym)",
     "HI Twin development",

@@ -466,7 +466,7 @@ export const componentSections: ComponentSection[] = [
             id: "d-list-view",
             name: "Skill list view",
             description:
-              "Each Skill is shown as a card with: name, description, origin (who created it), tags, and a core/personalized indicator.",
+              "Each Skill is shown as a card with: name, description, origin (who created it), tags, step count (core vs. personalized), and related Skills.",
             guidelines: [
               "Search by name, description, or tags.",
               "Filter by: My Skills, Shared Skills, All Skills.",
@@ -478,7 +478,7 @@ export const componentSections: ComponentSection[] = [
             id: "d-skill-count",
             name: "Skill count and stats",
             description:
-              "Header area showing total Skills, how many are personalized, and how many have been proposed for Intuit-wide use.",
+              "Header area showing total Skills, how many contain personalized steps, and how many have been proposed for Intuit-wide use.",
             guidelines: [
               "Keep it compact — one line of stats above the list.",
             ],
@@ -536,30 +536,43 @@ export const componentSections: ComponentSection[] = [
       },
       {
         id: "d-core-vs-personal",
-        title: "Core Skill vs. Personalization",
+        title: "Core vs. Personalized Steps",
         description:
-          "Every Skill has two layers displayed distinctly so the expert (and anyone consuming the Skill) can tell what's universal and what's specific to one expert's style.",
+          "Within a Skill, each step is tagged as either Core or Personalized. Core steps are the universal, transferable logic — the part that any expert or agent can adopt. Personalized steps are expert-specific additions or modifications: a different navigation shortcut, a preferred phrasing, an extra verification step that matches how one expert likes to work. When an expert imports an Intuit-wide Skill, they receive the Core steps. They can then add their own Personalized steps or modify existing ones without affecting the shared version.",
         specs: [
           {
-            id: "d-core-layer",
-            name: "Core Skill",
+            id: "d-core-step",
+            name: "Core step",
             description:
-              "The transferable, universal logic of the Skill — the steps, the decision points, the expected inputs and outputs. This is what gets shared Intuit-wide.",
+              "A step that is part of the universal Skill logic. Core steps are what get shared Intuit-wide. They represent the canonical way to accomplish the task.",
             guidelines: [
-              "Displayed with a neutral visual treatment (standard card, standard text).",
-              "Always visible and always first in the Skill detail view.",
-              "Must be self-contained — understandable without the personalization layer.",
+              "Displayed with a neutral visual treatment — standard text, standard row in the step list.",
+              "Every Skill must have at least one Core step. A Skill with only Personalized steps cannot be proposed for Intuit-wide use.",
+              "Core steps are locked from modification in an imported Skill — the expert forks the Skill if they want to change core logic.",
             ],
           },
           {
-            id: "d-personal-layer",
-            name: "Personalization layer",
+            id: "d-personalized-step",
+            name: "Personalized step",
             description:
-              "Expert-specific additions: navigation shortcuts, phrasing preferences, tool choices, and style notes. This is what makes the Skill feel like 'theirs.'",
+              "A step the expert has added or modified to match their style. Examples: a navigation shortcut instead of the menu path, a custom greeting template, an extra QA check they always perform.",
             guidelines: [
-              "Displayed with a distinct visual treatment (amber/gold accent, 'Your style' label).",
-              "Collapsible — so the expert can focus on core logic when needed.",
-              "Not included when the Skill is proposed for Intuit-wide consumption (but the expert can see what was stripped).",
+              "Displayed with a distinct visual treatment — amber/gold left border and a 'Your step' tag.",
+              "Personalized steps can be inserted between Core steps, appended at the end, or used to replace a Core step (the original Core step is preserved underneath).",
+              "When the Skill is proposed for Intuit-wide consumption, Personalized steps are stripped. The expert sees a preview of what the shared version will look like.",
+              "Other experts who import the Skill do not see the original expert's Personalized steps — they start with Core only and add their own.",
+            ],
+          },
+          {
+            id: "d-step-tagging",
+            name: "Step tagging & management",
+            description:
+              "The expert can tag any step as Core or Personalized. Shadow also auto-suggests tags based on whether the step matches common patterns (Core) or is unique to this expert's sessions (Personalized).",
+            guidelines: [
+              "Each step in the step list shows a small tag: 'Core' (neutral) or 'Yours' (amber).",
+              "The expert can toggle a step's tag at any time.",
+              "When viewing a Skill, the expert can filter to show 'All steps', 'Core only', or 'My additions only'.",
+              "Shadow highlights newly added Personalized steps so the expert can review what's unique to them.",
             ],
           },
         ],
@@ -590,6 +603,105 @@ export const componentSections: ComponentSection[] = [
               "Displayed separately from imported Skills with a different label: 'May also invoke' or 'Related optional Skills.'",
               "During Skill execution (Agent Mode), Shadow presents these as choices: 'Would you also like me to run [optional Skill]?'",
               "Example: 'qbo-resolve-reconciliation-discrepancy' optionally invokes 'qbo-generate-reconciliation-report.'",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "inline-suggestions",
+    letter: "E",
+    title: "Inline Suggestions (Phase 2)",
+    description:
+      "Inline suggestions are contextual nudges that appear directly on the expert's screen — overlaid on the page they're working on, not just in the Right Panel. Think of Cursor's ghost text: it appears right where you're typing, exactly when it's relevant. Shadow's equivalent is a subtle callout at the point of action — when the expert is about to navigate, click, or fill in a field.",
+    subSections: [
+      {
+        id: "e-contextual-nudges",
+        title: "Contextual Nudges",
+        description:
+          "Proactive suggestions that appear on the expert's screen during a call, anchored to the UI element or workflow step they relate to.",
+        specs: [
+          {
+            id: "e-nudge-type",
+            name: "Nudge types",
+            description:
+              "Three categories of inline suggestion: (1) Behavioral — based on what other experts typically do at this point ('Experts usually verify the reconciliation date here'), (2) Contextual — based on the current customer's history ('David mentioned a $247 discrepancy in Supplies last time'), (3) Skill-aware — suggesting a relevant Skill step ('You have a Skill for this — want to run it?').",
+            guidelines: [
+              "Nudges appear as small, dismissible callouts near the relevant UI element — never blocking the expert's work.",
+              "Each nudge includes a source indicator: 'From your patterns', 'From customer history', or 'Skill: qbo-reconcile-account'.",
+              "Maximum 1 nudge visible at a time. Queue additional nudges and show them sequentially.",
+              "Nudges auto-dismiss after 8 seconds if not interacted with.",
+            ],
+          },
+          {
+            id: "e-nudge-appearance",
+            name: "Visual treatment",
+            description:
+              "A compact floating card with a subtle shadow, anchored near the relevant element. Uses Shadow's brand accent color for the left border. Contains 1-2 lines of text, an optional action button, and a dismiss X.",
+            states: [
+              "Appearing: fade-in with a slight slide-up animation.",
+              "Visible: static, positioned near the anchor element. Repositions if the page scrolls.",
+              "Interacted: if the expert clicks the action button, the nudge transitions to the Right Panel for follow-through.",
+              "Dismissed: fade-out on click of X or after auto-dismiss timer.",
+            ],
+            guidelines: [
+              "Never cover critical UI elements (form fields, buttons the expert is about to click).",
+              "Position priority: below the element, then above, then to the side.",
+              "The expert can disable inline suggestions entirely from the Right Panel settings.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "e-learning-indicators",
+        title: "Learning Indicators",
+        description:
+          "Subtle visual signals that show Shadow is observing and learning — building trust that the system is paying attention without being intrusive.",
+        specs: [
+          {
+            id: "e-learning-pulse",
+            name: "Activity pulse",
+            description:
+              "A small, pulsing dot on the Shadow extension icon that indicates Shadow noticed something noteworthy — a new pattern, a deviation from usual behavior, or a potential Skill opportunity. Clicking it opens a brief explanation in the Right Panel.",
+            guidelines: [
+              "The pulse is gentle and non-distracting — not an alert, a signal.",
+              "At most 2-3 pulses per session to avoid fatigue.",
+              "Each pulse links to a specific insight: 'I noticed you used a different approach for this reconciliation — want me to remember it?'",
+            ],
+          },
+          {
+            id: "e-skill-match",
+            name: "Skill match indicator",
+            description:
+              "When the expert navigates to a page or starts an action that matches a known Skill, a brief indicator appears: 'Skill available: qbo-create-expense'. Clicking it opens the Skill in the Right Panel.",
+            states: [
+              "Matched: small banner at the top of the Right Rail — 'Skill match: [skill name]'.",
+              "Clicked: opens the Skill detail in the Right Panel with an option to execute (Agent Mode) or view steps (Plan Mode).",
+              "Dismissed: expert closes it, won't show again for this Skill on this page during this session.",
+            ],
+            guidelines: [
+              "Only show for Skills with high confidence match (>80% step overlap with current context).",
+              "Don't show for Skills the expert just executed — avoid redundancy.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "e-phase2-note",
+        title: "Phase 2 Scope",
+        description:
+          "Inline suggestions are not part of the Phase 1 Chrome Extension. They require deeper page-level integration and confidence calibration. They're spec'd here because the component model needs to account for them — the Right Rail's layout, the event system, and the Skill matching engine all need to be designed with inline suggestions in mind, even before they ship.",
+        specs: [
+          {
+            id: "e-prereqs",
+            name: "Prerequisites for Phase 2",
+            description:
+              "Before inline suggestions can ship, Phase 1 needs to establish: (1) a reliable Skill matching engine with known accuracy, (2) enough Expert Profile depth to generate behavioral nudges, (3) expert trust — measured by continued usage and positive feedback on Right Panel suggestions.",
+            guidelines: [
+              "Phase 1 data collection directly feeds Phase 2 suggestion quality.",
+              "The Right Panel in Phase 1 serves as a proving ground — if experts find its suggestions valuable, inline suggestions are the natural extension.",
+              "Inline suggestions should launch behind a feature flag, opt-in only, with the expert panel providing initial feedback.",
             ],
           },
         ],

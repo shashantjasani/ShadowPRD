@@ -108,6 +108,38 @@ export default function MetricsPage() {
           </div>
         </div>
 
+        {/* Adoption Curve */}
+        <div className="mb-14">
+          <h2 className="mb-2 text-xl font-bold">Adoption Curve</h2>
+          <p className="mb-6 text-sm text-muted leading-relaxed">
+            Shadow&apos;s value compounds over time. Here&apos;s how the expert&apos;s experience evolves from first install to three months in.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {metrics.adoptionCurve.map((stage, i) => (
+              <div
+                key={stage.period}
+                className="rounded-xl border border-border bg-surface p-5"
+              >
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+                    {stage.period}
+                  </span>
+                </div>
+                <h3 className="mb-2 font-semibold">{stage.title}</h3>
+                <EditableText
+                  contentKey={`metrics.adoptionCurve.${i}.description`}
+                  original={stage.description}
+                  className="text-sm leading-relaxed text-muted"
+                  multiline
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-12 rounded-lg border border-border bg-surface p-5">
           <h3 className="mb-2 font-semibold">Pilot Scope</h3>
           <EditableText
@@ -136,6 +168,33 @@ export default function MetricsPage() {
               />
             </div>
           ))}
+        </div>
+
+        {/* Where This Goes */}
+        <div className="mb-14">
+          <h2 className="mb-4 text-xl font-bold">Where This Goes</h2>
+          <EditableText
+            contentKey="metrics.whereThisGoes.intro"
+            original={metrics.whereThisGoes.intro}
+            className="mb-6 text-sm leading-relaxed text-muted"
+            multiline
+          />
+          <div className="space-y-4">
+            {metrics.whereThisGoes.items.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-lg border border-dashed border-accent/30 bg-accent-light/10 p-5"
+              >
+                <h3 className="mb-2 font-semibold text-accent">{item.title}</h3>
+                <EditableText
+                  contentKey={`metrics.whereThisGoes.${item.title}`}
+                  original={item.description}
+                  className="text-sm leading-relaxed text-muted"
+                  multiline
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>

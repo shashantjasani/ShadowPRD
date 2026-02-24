@@ -132,11 +132,11 @@ export const apiEndpoints = [
   "name": "quickbooks-online-create-expense-transaction",
   "description": "Create an expense transaction in QuickBooks Online.",
   "steps": [
-    "Go to Expenses (left menu).",
-    "Click \\"New transaction\\" → \\"Expense\\".",
-    "Choose Payee and Payment method/account.",
-    "Enter Category, Description, and Amount.",
-    "Click \\"Save and close\\"."
+    { "index": 0, "label": "Go to Expenses (left menu).", "tag": "core" },
+    { "index": 1, "label": "Click \\"New transaction\\" → \\"Expense\\".", "tag": "core" },
+    { "index": 2, "label": "Choose Payee and Payment method/account.", "tag": "core" },
+    { "index": 3, "label": "Enter Category, Description, and Amount.", "tag": "core" },
+    { "index": 4, "label": "Click \\"Save and close\\".", "tag": "core" }
   ],
   "generatedFrom": {
     "sessionId": "session-1771531819539-hfz31o",
@@ -178,17 +178,21 @@ export const apiEndpoints = [
   "slug": "qbo-create-expense",
   "description": "Create an expense transaction in QuickBooks Online.",
   "steps": [
-    "Go to Expenses (left menu).",
-    "Click \\"New transaction\\" → \\"Expense\\".",
-    "Choose Payee and Payment method/account.",
-    "Enter Ref no. (optional).",
-    "In the line item: pick Category, add Description, enter Amount.",
-    "Click \\"Save and close\\"."
+    { "index": 0, "label": "Go to Expenses (left menu).", "tag": "core" },
+    { "index": 1, "label": "Click \\"New transaction\\" → \\"Expense\\".", "tag": "core" },
+    { "index": 2, "label": "Choose Payee and Payment method/account.", "tag": "core" },
+    { "index": 3, "label": "Enter Ref no. (optional).", "tag": "core" },
+    { "index": 4, "label": "In the line item: pick Category, add Description, enter Amount.", "tag": "core" },
+    { "index": 5, "label": "Click \\"Save and close\\".", "tag": "core" },
+    { "index": 6, "label": "Use Cmd+S shortcut instead of clicking Save.", "tag": "personalized", "personalizedBy": "usr_asha01" }
   ],
   "tags": ["QuickBooks Online", "Expenses", "Bookkeeping"],
-  "version": 2,
+  "version": 3,
   "sourceSessionIds": ["session-1771531819539-hfz31o"],
-  "format": "agent-skill-v1"
+  "importedSkills": [],
+  "optionalSkills": ["skill-008"],
+  "proposedForSharing": "approved",
+  "format": "agent-skill-v2"
 }`,
     status: "200 OK",
   },
@@ -198,13 +202,13 @@ export const apiEndpoints = [
     summary: "Update a Skill (e.g. after expert refinement)",
     requestBody: `{
   "steps": [
-    "Go to Expenses (left menu).",
-    "Click \\"New transaction\\" → \\"Expense\\".",
-    "Choose Payee and Payment method/account.",
-    "Enter Ref no. (optional).",
-    "In the line item: pick Category, add Description, enter Amount.",
-    "Click \\"Save and close\\".",
-    "Verify the expense appears in the Expenses list."
+    { "index": 0, "label": "Go to Expenses (left menu).", "tag": "core" },
+    { "index": 1, "label": "Click \\"New transaction\\" → \\"Expense\\".", "tag": "core" },
+    { "index": 2, "label": "Choose Payee and Payment method/account.", "tag": "core" },
+    { "index": 3, "label": "Enter Ref no. (optional).", "tag": "core" },
+    { "index": 4, "label": "In the line item: pick Category, add Description, enter Amount.", "tag": "core" },
+    { "index": 5, "label": "Click \\"Save and close\\".", "tag": "core" },
+    { "index": 6, "label": "Verify the expense appears in the Expenses list.", "tag": "personalized" }
   ],
   "tags": ["QuickBooks Online", "Expenses", "Bookkeeping", "Verified"]
 }`,
@@ -235,6 +239,55 @@ export const apiEndpoints = [
   },
 ];
 
+export const intelligencePipeline = {
+  description:
+    "The Intelligence Pipeline is how raw session data becomes actionable Skills. Each stage transforms the data and requires different processing — some on-device, some in the cloud.",
+  stages: [
+    {
+      name: "Capture",
+      location: "Edge (on-device)",
+      description: "Raw user actions, audio, and screenshots are recorded during a session.",
+      output: "SessionEvents + raw transcript + screenshot refs",
+    },
+    {
+      name: "Filter",
+      location: "Edge (on-device)",
+      description: "PII is detected and redacted. Noise events (idle scrolls, irrelevant hovers) are stripped. Only meaningful actions survive.",
+      output: "Filtered, PII-redacted event stream",
+    },
+    {
+      name: "Interpret",
+      location: "Cloud",
+      description: "LLM processes the filtered events + transcript to understand what happened. Actions are grouped into logical steps. Intent is inferred from context.",
+      output: "Structured action sequence with inferred intent",
+    },
+    {
+      name: "Pattern Match",
+      location: "Cloud",
+      description: "The interpreted sequence is compared against existing Skills and the expert's past sessions. Shadow detects: is this a known Skill? A variation? Something entirely new?",
+      output: "Match result: existing Skill, Skill update, or new Skill candidate",
+    },
+    {
+      name: "Skill Draft",
+      location: "Cloud",
+      description: "For new patterns or updates, Shadow generates a Skill draft: named steps, core vs. personalized tags, related Skill associations. The draft includes the expert's specific style.",
+      output: "Draft Skill with step-level core/personalized tagging",
+    },
+    {
+      name: "Expert Validation",
+      location: "Edge (Right Panel)",
+      description: "The draft is presented to the expert for review. They can approve, modify steps, re-tag core vs. personalized, reject, or give feedback. This is the critical quality signal.",
+      output: "Validated Skill (expert-approved) + feedback signal for Shadow's learning",
+    },
+    {
+      name: "Publish",
+      location: "Cloud",
+      description: "The validated Skill enters the expert's library. If proposed for Intuit-wide use, the personalization layer is stripped and the core Skill is submitted for review.",
+      output: "Published Skill in the Skill Registry, available for execution and sharing",
+    },
+  ],
+};
+
 export const dataModels = [
   {
     name: "Session",
@@ -259,14 +312,28 @@ export const dataModels = [
       { name: "name", type: "string (kebab-case identifier)" },
       { name: "slug", type: "string" },
       { name: "description", type: "string" },
-      { name: "steps", type: "string[]" },
+      { name: "steps", type: "SkillStep[]" },
       { name: "tags", type: "string[]" },
       { name: "version", type: "number" },
-      { name: "format", type: '"agent-skill-v1"' },
+      { name: "format", type: '"agent-skill-v2"' },
       { name: "sourceSessionIds", type: "string[]" },
       { name: "createdBy", type: "string (userId)" },
+      { name: "importedSkills", type: "string[]? (required dependency Skill IDs)" },
+      { name: "optionalSkills", type: "string[]? (optionally invoked Skill IDs)" },
+      { name: "proposedForSharing", type: 'boolean | "pending" | "approved" | "rejected"' },
       { name: "createdAt", type: "ISO 8601" },
       { name: "updatedAt", type: "ISO 8601" },
+    ],
+  },
+  {
+    name: "SkillStep",
+    fields: [
+      { name: "index", type: "number" },
+      { name: "label", type: "string" },
+      { name: "tag", type: '"core" | "personalized"' },
+      { name: "personalizedBy", type: "string? (userId — only for personalized steps)" },
+      { name: "replacesCore", type: "number? (index of core step this replaces, if any)" },
+      { name: "addedAt", type: "ISO 8601" },
     ],
   },
   {

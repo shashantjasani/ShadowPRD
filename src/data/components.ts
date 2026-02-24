@@ -253,12 +253,20 @@ export const componentSections: ComponentSection[] = [
             id: "c-plan-mode",
             name: "Plan Mode",
             description:
-              "Shadow explains what to do step by step but does not execute any actions. The expert performs the steps manually. Think of it as a knowledgeable guide.",
-            states: ["Active (indicated by a label in the chat header)", "Inactive"],
+              "Shadow analyzes the expert's request, identifies relevant Skills, and composes a Plan — a to-do checklist that can span multiple Skills. The expert reviews, reorders, adds their own steps, and checks items off as they work through the plan. Shadow does not execute actions in Plan Mode; the expert stays in control. Think of it like Cursor's Plan Mode — a collaborative task list, not just step-by-step instructions.",
+            states: [
+              "Draft: Shadow proposes a plan, expert hasn't accepted yet.",
+              "Active: expert accepted the plan, can check off items and add steps.",
+              "Complete: all items checked off — option to switch to Agent Mode for next time.",
+            ],
             guidelines: [
               "Default mode for new users.",
-              "Shadow provides numbered step-by-step instructions with specific UI references.",
+              "Plans compose multiple Skills — each to-do item is tagged with the Skill it belongs to.",
+              "Experts can add their own custom steps to the plan (tagged as 'You').",
+              "Experts can remove items they don't need.",
+              "A progress bar shows completion (e.g., 4/7 steps done).",
               "No Skill Execution Preview cards appear in this mode.",
+              "Once all items are done, Shadow offers to switch to Agent Mode for automatic execution next time.",
             ],
           },
           {

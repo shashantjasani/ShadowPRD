@@ -150,31 +150,30 @@ function MockRecordTab() {
    Section B: Chat Tab
    ═══════════════════════════════════════════════════ */
 
-function PlanStepCard({ step, number }: { step: { title: string; detail: string; tip?: string }; number: number }) {
-  return (
-    <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2.5 text-[12px] leading-relaxed max-w-[92%]">
-      <div className="flex items-start gap-2">
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-bold text-accent mt-0.5">
-          {number}
-        </span>
-        <div>
-          <div className="font-semibold text-zinc-800">{step.title}</div>
-          <div className="mt-0.5 text-zinc-600">{step.detail}</div>
-          {step.tip && (
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2 py-1 text-[11px] text-amber-700">
-              <span className="shrink-0 mt-0.5">💡</span>
-              <span>{step.tip}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+interface PlanItem {
+  id: string;
+  text: string;
+  skill?: string;
+  done: boolean;
+  addedBy: "shadow" | "expert";
 }
+
+const initialPlanItems: PlanItem[] = [
+  { id: "p1", text: "Pull customer's reconciliation history from Memory", skill: "ctx-customer-history", done: false, addedBy: "shadow" },
+  { id: "p2", text: "Open Bookkeeping → Reconcile in QBO", skill: "qbo-reconcile-account", done: false, addedBy: "shadow" },
+  { id: "p3", text: "Select Business Checking (****4521), set period to Jan 1–31", skill: "qbo-reconcile-account", done: false, addedBy: "shadow" },
+  { id: "p4", text: "Auto-match transactions by amount + date", skill: "qbo-reconcile-account", done: false, addedBy: "shadow" },
+  { id: "p5", text: "Flag unmatched transactions for manual review", skill: "qbo-reconcile-account", done: false, addedBy: "shadow" },
+  { id: "p6", text: "Generate reconciliation summary report", skill: "qbo-generate-report", done: false, addedBy: "shadow" },
+  { id: "p7", text: "Send confirmation to customer via case notes", skill: "case-wrap-up", done: false, addedBy: "shadow" },
+];
 
 function MockChatTab() {
   const [mode, setMode] = useState<"Plan" | "Agent">("Plan");
-  const [planStep, setPlanStep] = useState(0);
+  const [planItems, setPlanItems] = useState<PlanItem[]>(initialPlanItems);
+  const [newItemText, setNewItemText] = useState("");
+  const [showAddInput, setShowAddInput] = useState(false);
+  const [planAccepted, setPlanAccepted] = useState(false);
   const [agentMessages, setAgentMessages] = useState([
     { role: "user" as const, text: "Reconcile my business checking for January" },
     { role: "shadow" as const, text: "I found a matching Skill: qbo-reconcile-account. I can execute this for you — let me pull up the details." },
@@ -183,21 +182,28 @@ function MockChatTab() {
   const [executionState, setExecutionState] = useState<"preview" | "approved" | null>(null);
   const [input, setInput] = useState("");
 
-  const planSteps = [
-    { title: "Open Reconcile", detail: "Go to Bookkeeping in the left sidebar, then click Reconcile.", tip: "If you don't see Bookkeeping, check Settings → Navigation to enable it." },
-    { title: "Select the account", detail: "From the Account dropdown, choose Business Checking (****4521)." },
-    { title: "Set the statement period", detail: "Enter the ending date (Jan 31, 2026) and the ending balance from your bank statement.", tip: "Your bank statement balance is $24,817.50 based on the last uploaded statement." },
-    { title: "Match transactions", detail: "Compare each transaction against your bank statement. Check the box next to transactions that match. The difference at the top should reach $0.00." },
-    { title: "Resolve discrepancies", detail: "If the difference isn't zero, look for missing or duplicate transactions. You can sort by amount to find large mismatches faster.", tip: "Based on your pattern, you usually start with the largest discrepancies — that approach works well here." },
-    { title: "Finish", detail: "Once the difference is $0.00, click Finish now. QBO will save the reconciliation and mark the period as complete." },
-  ];
+  const skillGroups = planItems.reduce<Record<string, PlanItem[]>>((acc, item) => {
+    const key = item.skill || "_custom";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+    return acc;
+  }, {});
 
-  const visiblePlanSteps = planSteps.slice(0, planStep + 1);
+  const doneCount = planItems.filter((i) => i.done).length;
 
-  function handlePlanNext() {
-    if (planStep < planSteps.length - 1) {
-      setPlanStep((s) => s + 1);
-    }
+  function toggleItem(id: string) {
+    setPlanItems((items) => items.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
+  }
+
+  function removeItem(id: string) {
+    setPlanItems((items) => items.filter((i) => i.id !== id));
+  }
+
+  function addItem() {
+    if (!newItemText.trim()) return;
+    setPlanItems((items) => [...items, { id: `custom-${Date.now()}`, text: newItemText.trim(), done: false, addedBy: "expert" }]);
+    setNewItemText("");
+    setShowAddInput(false);
   }
 
   function handleAgentSend() {
@@ -219,6 +225,14 @@ function MockChatTab() {
     }, 1200);
   }
 
+  const skillLabels: Record<string, string> = {
+    "ctx-customer-history": "Customer History",
+    "qbo-reconcile-account": "Reconcile Account",
+    "qbo-generate-report": "Generate Report",
+    "case-wrap-up": "Case Wrap-Up",
+    "_custom": "Your additions",
+  };
+
   return (
     <MockRailFrame activeTab="Chat" tabs={["Record", "Chat", "Skills"]}>
       <div className="space-y-3">
@@ -233,54 +247,151 @@ function MockChatTab() {
         </div>
         <div className="text-[11px] text-zinc-400 leading-relaxed">
           {mode === "Plan"
-            ? "Shadow walks you through each step — you perform the actions."
+            ? "Shadow builds a plan from multiple Skills. Review, reorder, and add your own steps."
             : "Shadow can execute Skills on your behalf — with your approval."}
         </div>
 
         {/* ── Plan Mode ── */}
         {mode === "Plan" && (
           <>
-            <div className="space-y-2.5 max-h-[340px] overflow-y-auto">
-              {/* User message */}
-              <div className="flex justify-end">
-                <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
-                  How do I reconcile my business checking for January?
-                </div>
+            {/* User message */}
+            <div className="flex justify-end">
+              <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                Customer needs Jan reconciliation for their business checking, summary report, and a confirmation note on the case.
               </div>
-
-              {/* Shadow intro */}
-              <div className="max-w-[92%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-zinc-100 text-zinc-700 rounded-bl-sm">
-                I found a Skill for this: <strong>qbo-reconcile-account</strong> (6 steps). Let me walk you through it one step at a time.
-              </div>
-
-              {/* Step cards */}
-              {visiblePlanSteps.map((step, i) => (
-                <PlanStepCard key={i} step={step} number={i + 1} />
-              ))}
-
-              {/* Completion message */}
-              {planStep >= planSteps.length - 1 && (
-                <div className="max-w-[92%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-zinc-100 text-zinc-700 rounded-bl-sm">
-                  That&apos;s all 6 steps! Let me know if you run into any issues or want me to switch to <strong>Agent Mode</strong> to handle it for you next time.
-                </div>
-              )}
             </div>
 
-            {/* Next step button */}
-            {planStep < planSteps.length - 1 ? (
-              <button
-                onClick={handlePlanNext}
-                className="w-full rounded-xl bg-accent/10 px-4 py-2.5 text-[13px] font-medium text-accent hover:bg-accent/20 transition-colors"
-              >
-                Show next step ({planStep + 2} of {planSteps.length})
-              </button>
-            ) : (
-              <button
-                onClick={() => setPlanStep(0)}
-                className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
-              >
-                ↻ Start over
-              </button>
+            {/* Shadow plan intro */}
+            <div className="rounded-xl bg-zinc-100 px-3 py-2 text-[12px] text-zinc-700 leading-relaxed">
+              I&apos;ve built a plan combining <strong>3 Skills</strong> plus a context lookup. Review the steps below — check them off as you go, or add your own.
+            </div>
+
+            {/* Plan card */}
+            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              {/* Plan header */}
+              <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-zinc-800">Plan</span>
+                  <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+                    {doneCount}/{planItems.length}
+                  </span>
+                </div>
+                {!planAccepted ? (
+                  <button
+                    onClick={() => setPlanAccepted(true)}
+                    className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
+                  >
+                    Accept Plan
+                  </button>
+                ) : (
+                  <span className="text-[11px] font-medium text-emerald-600">Active</span>
+                )}
+              </div>
+
+              {/* Grouped to-do items */}
+              <div className="max-h-[260px] overflow-y-auto divide-y divide-zinc-50">
+                {Object.entries(skillGroups).map(([skillKey, items]) => (
+                  <div key={skillKey} className="px-3 py-2">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      {skillKey !== "_custom" && (
+                        <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-500 uppercase tracking-wide">
+                          Skill
+                        </span>
+                      )}
+                      <span className="text-[11px] font-semibold text-zinc-600">
+                        {skillLabels[skillKey] || skillKey}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`group flex items-start gap-2 rounded-lg px-2 py-1.5 transition-colors ${planAccepted ? "hover:bg-zinc-50" : ""} ${item.done ? "opacity-50" : ""}`}
+                        >
+                          <button
+                            onClick={() => planAccepted && toggleItem(item.id)}
+                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                              item.done
+                                ? "border-emerald-400 bg-emerald-400 text-white"
+                                : planAccepted
+                                  ? "border-zinc-300 hover:border-accent"
+                                  : "border-zinc-200"
+                            }`}
+                          >
+                            {item.done && (
+                              <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <span className={`flex-1 text-[12px] leading-snug ${item.done ? "line-through text-zinc-400" : "text-zinc-700"}`}>
+                            {item.text}
+                            {item.addedBy === "expert" && (
+                              <span className="ml-1.5 rounded bg-amber-50 px-1 py-0.5 text-[9px] font-semibold text-amber-500 align-middle">You</span>
+                            )}
+                          </span>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="shrink-0 text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all text-[14px] leading-none mt-0.5"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add item */}
+              <div className="border-t border-zinc-100 px-3 py-2">
+                {showAddInput ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={newItemText}
+                      onChange={(e) => setNewItemText(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") addItem(); if (e.key === "Escape") { setShowAddInput(false); setNewItemText(""); } }}
+                      placeholder="Add a step…"
+                      className="flex-1 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-[12px] outline-none focus:border-accent/40 placeholder:text-zinc-400"
+                    />
+                    <button onClick={addItem} className="rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-accent/90">Add</button>
+                    <button onClick={() => { setShowAddInput(false); setNewItemText(""); }} className="text-[12px] text-zinc-400 hover:text-zinc-600">Cancel</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddInput(true)}
+                    className="flex items-center gap-1.5 text-[12px] text-zinc-400 hover:text-accent transition-colors"
+                  >
+                    <span className="text-[16px] leading-none">+</span> Add your own step
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Progress & convert to agent */}
+            {planAccepted && doneCount > 0 && (
+              <div className="space-y-2">
+                <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+                    style={{ width: `${(doneCount / planItems.length) * 100}%` }}
+                  />
+                </div>
+                {doneCount === planItems.length ? (
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[12px] text-emerald-700 font-medium text-center">
+                    Plan complete! All {planItems.length} steps done.
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setMode("Agent")}
+                    className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
+                  >
+                    Switch to Agent Mode to execute remaining steps →
+                  </button>
+                )}
+              </div>
             )}
           </>
         )}

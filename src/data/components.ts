@@ -23,91 +23,9 @@ export interface ComponentSection {
 
 export const componentSections: ComponentSection[] = [
   {
-    id: "not-logged-in",
-    letter: "A",
-    title: "Right Rail — Not Logged In",
-    description:
-      "What the expert sees before authenticating with their Intuit Google Profile. The panel should clearly communicate what Shadow is, why it's valuable, and provide a frictionless path to sign in.",
-    subSections: [
-      {
-        id: "a-branding",
-        title: "Branding & Introduction",
-        description:
-          "The unauthenticated state is the expert's first impression of Shadow. It should be clean, professional, and immediately communicative.",
-        specs: [
-          {
-            id: "a-logo",
-            name: "Shadow logo and name",
-            description:
-              "Displayed prominently at the top of the panel. Establishes identity.",
-            guidelines: [
-              "Use the standard Shadow logo mark (S icon) and wordmark.",
-              "No version numbers or internal labels visible to the user.",
-            ],
-          },
-          {
-            id: "a-tagline",
-            name: "Value tagline",
-            description:
-              "A one-liner explaining what Shadow does: 'Your AI assistant that learns how you work.'",
-            guidelines: [
-              "Keep it under 10 words.",
-              "Focus on the expert's benefit, not Shadow's features.",
-            ],
-          },
-          {
-            id: "a-feature-bullets",
-            name: "Feature highlights",
-            description:
-              "3–4 short bullets showing what the expert gets: personalized Skills, session capture, in-context assistance, wrap-up automation.",
-            guidelines: [
-              "Use icons or small illustrations alongside each bullet.",
-              "No jargon — language should make sense to a first-time user.",
-            ],
-          },
-        ],
-      },
-      {
-        id: "a-auth",
-        title: "Authentication",
-        description:
-          "Sign-in flow using the expert's Intuit Google Profile.",
-        specs: [
-          {
-            id: "a-sign-in-cta",
-            name: "Sign in button",
-            description:
-              "Primary CTA: 'Sign in with Intuit'. Uses the standard Intuit OAuth / Google Profile flow.",
-            states: [
-              "Default: button enabled, ready to click.",
-              "Loading: spinner replaces button text while authenticating.",
-              "Error: inline error message below the button if auth fails.",
-              "Success: panel transitions to the Record Tab home (Section B).",
-            ],
-            guidelines: [
-              "Button should be the most prominent element on the panel.",
-              "Do not require any information before sign-in — one click to authenticate.",
-              "If the user is already authenticated in the browser, auto-detect and skip this screen.",
-            ],
-          },
-          {
-            id: "a-privacy-note",
-            name: "Privacy note",
-            description:
-              "A brief reassurance below the sign-in button: 'Shadow only records when you start a session. You review everything before it's shared.'",
-            guidelines: [
-              "Keep it to 1–2 sentences.",
-              "Link to the full privacy policy if available.",
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
     id: "record-tab",
-    letter: "B",
-    title: "Right Rail — Record Tab (Logged In)",
+    letter: "A",
+    title: "Right Rail — Record Tab",
     description:
       "The Record Tab is the expert's control center for session capture. It provides session start/stop controls, granular capture settings, auto-trigger configuration, and access to past session captures.",
     subSections: [
@@ -320,8 +238,8 @@ export const componentSections: ComponentSection[] = [
   },
   {
     id: "chat-tab",
-    letter: "C",
-    title: "Right Rail — Chat Tab (Logged In)",
+    letter: "B",
+    title: "Right Rail — Chat Tab",
     description:
       "The Chat Tab is the conversational interface between the expert and Shadow. It supports two interaction modes, image uploads for context, and the full Skill execution flow with expert approval.",
     subSections: [
@@ -451,7 +369,7 @@ export const componentSections: ComponentSection[] = [
   },
   {
     id: "skills-tab",
-    letter: "D",
+    letter: "C",
     title: "Skills Tab",
     description:
       "The Skills Tab is where the expert views, manages, and shares their Skills. Each Skill clearly separates core logic from personalization, and shows relationships to other Skills.",
@@ -611,8 +529,8 @@ export const componentSections: ComponentSection[] = [
   },
   {
     id: "inline-suggestions",
-    letter: "E",
-    title: "Inline Suggestions (Phase 2)",
+    letter: "D",
+    title: "Inline Suggestions",
     description:
       "Inline suggestions are contextual nudges that appear directly on the expert's screen — overlaid on the page they're working on, not just in the Right Panel. Think of Cursor's ghost text: it appears right where you're typing, exactly when it's relevant. Shadow's equivalent is a subtle callout at the point of action — when the expert is about to navigate, click, or fill in a field.",
     subSections: [
@@ -689,18 +607,18 @@ export const componentSections: ComponentSection[] = [
       },
       {
         id: "e-phase2-note",
-        title: "Phase 2 Scope",
+        title: "Rollout Considerations",
         description:
-          "Inline suggestions are not part of the Phase 1 Chrome Extension. They require deeper page-level integration and confidence calibration. They're spec'd here because the component model needs to account for them — the Right Rail's layout, the event system, and the Skill matching engine all need to be designed with inline suggestions in mind, even before they ship.",
+          "Inline suggestions require deeper page-level integration and confidence calibration. They're spec'd here because the component model needs to account for them — the Right Rail's layout, the event system, and the Skill matching engine all need to be designed with inline suggestions in mind, even before they ship.",
         specs: [
           {
             id: "e-prereqs",
-            name: "Prerequisites for Phase 2",
+            name: "Prerequisites",
             description:
-              "Before inline suggestions can ship, Phase 1 needs to establish: (1) a reliable Skill matching engine with known accuracy, (2) enough Expert Profile depth to generate behavioral nudges, (3) expert trust — measured by continued usage and positive feedback on Right Panel suggestions.",
+              "Before inline suggestions can ship, the foundation needs to be in place: (1) a reliable Skill matching engine with known accuracy, (2) enough Expert Profile depth to generate behavioral nudges, (3) expert trust — measured by continued usage and positive feedback on Right Panel suggestions.",
             guidelines: [
-              "Phase 1 data collection directly feeds Phase 2 suggestion quality.",
-              "The Right Panel in Phase 1 serves as a proving ground — if experts find its suggestions valuable, inline suggestions are the natural extension.",
+              "Early data collection directly feeds suggestion quality.",
+              "The Right Panel serves as a proving ground — if experts find its suggestions valuable, inline suggestions are the natural extension.",
               "Inline suggestions should launch behind a feature flag, opt-in only, with the expert panel providing initial feedback.",
             ],
           },

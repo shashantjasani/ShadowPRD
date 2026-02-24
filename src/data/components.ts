@@ -241,55 +241,58 @@ export const componentSections: ComponentSection[] = [
     letter: "B",
     title: "Right Rail — Chat Tab",
     description:
-      "The Chat Tab is the conversational interface between the expert and Shadow. It supports two interaction modes, image uploads for context, and the full Skill execution flow with expert approval.",
+      "The Chat Tab is the conversational interface between the expert and Shadow — like a Slack DM with a colleague who can see your screen. The expert asks questions, Shadow responds and can proactively message. When the expert wants Shadow to execute a Skill, an execution preview appears for approval. When the expert wants to plan, Shadow builds a plan in the dedicated Plan tab.",
     subSections: [
       {
-        id: "c-mode-selector",
-        title: "Mode Selector",
+        id: "c-chat-interaction",
+        title: "Chat Interaction",
         description:
-          "The expert can switch between Plan Mode and Agent Mode, controlling how Shadow responds.",
+          "The core conversational interface — input, messages, and Skill execution flow.",
         specs: [
           {
-            id: "c-plan-mode",
-            name: "Plan Mode",
+            id: "c-input",
+            name: "Chat input",
             description:
-              "Shadow analyzes the expert's request, identifies relevant Skills, and composes a Plan — a to-do checklist that can span multiple Skills. The expert reviews, reorders, adds their own steps, and checks items off as they work through the plan. Shadow does not execute actions in Plan Mode; the expert stays in control. Think of it like Cursor's Plan Mode — a collaborative task list, not just step-by-step instructions.",
-            states: [
-              "Draft: Shadow proposes a plan, expert hasn't accepted yet.",
-              "Active: expert accepted the plan, can check off items and add steps.",
-              "Complete: all items checked off — option to switch to Agent Mode for next time.",
-            ],
+              "Text input field with send button. Supports natural language questions, commands, and follow-ups.",
             guidelines: [
-              "Default mode for new users.",
-              "Plans compose multiple Skills — each to-do item is tagged with the Skill it belongs to.",
-              "Experts can add their own custom steps to the plan (tagged as 'You').",
-              "Experts can remove items they don't need.",
-              "A progress bar shows completion (e.g., 4/7 steps done).",
-              "No Skill Execution Preview cards appear in this mode.",
-              "Once all items are done, Shadow offers to switch to Agent Mode for automatic execution next time.",
+              "Enter key sends the message. Shift+Enter for newline.",
+              "Input auto-resizes up to 4 lines, then scrolls.",
+              "Show a subtle placeholder: 'Ask Shadow anything...'",
             ],
           },
           {
-            id: "c-agent-mode",
-            name: "Agent Mode",
+            id: "c-messages",
+            name: "Message history",
             description:
-              "Shadow can execute Skills on the expert's behalf. When Shadow identifies an executable Skill, it presents a Skill Execution Preview for the expert to approve, edit, or skip.",
-            states: ["Active (indicated by a label in the chat header)", "Inactive"],
+              "Scrollable chat history. Expert messages on the right, Shadow responses on the left. Proactive messages from Shadow include source badges (see Proactive Messages section).",
             guidelines: [
-              "Expert must explicitly switch to Agent Mode — it's never auto-enabled.",
-              "Every execution requires expert approval via the Skill Execution Preview card.",
-              "The expert can switch back to Plan Mode at any time, even mid-conversation.",
+              "Auto-scroll to the latest message.",
+              "Shadow messages support rich formatting: bold, lists, code blocks, inline Skill references.",
+              "Long messages are collapsible with a 'Show more' toggle.",
+              "Expert can react to any Shadow message (thumbs up/down) for feedback.",
             ],
           },
           {
-            id: "c-mode-toggle",
-            name: "Mode toggle UI",
+            id: "c-skill-execution",
+            name: "Skill Execution Preview",
             description:
-              "A segmented control or toggle in the chat header that switches between Plan and Agent mode.",
+              "When the expert asks Shadow to execute a Skill, it presents a preview card showing the Skill name, every parameter and value, and three action buttons: Approve & Execute, Review & Edit, and Skip.",
             guidelines: [
-              "Clearly indicate the current mode with a label and visual differentiation.",
-              "Show a brief tooltip on first use explaining the difference.",
-              "Mode persists across sessions (saved in user preferences).",
+              "The preview must show every field that will be affected — no hidden actions.",
+              "Review & Edit makes all fields editable inline before approval.",
+              "After approval, show execution status and a confirmation with result details.",
+              "Execution is never automatic — the expert always initiates it.",
+            ],
+          },
+          {
+            id: "c-plan-trigger",
+            name: "Plan creation from Chat",
+            description:
+              "When the expert asks Shadow to plan something (e.g., 'plan it out for me'), Shadow builds the plan in the Plan tab and confirms in chat with a reference to switch over.",
+            guidelines: [
+              "Shadow's confirmation message should say where the plan is: 'I built a plan in the Plan tab — switch over to review.'",
+              "The expert can continue chatting while the plan is active in the other tab.",
+              "Plans are not embedded inline in chat — they live in their own tab.",
             ],
           },
         ],
@@ -330,45 +333,103 @@ export const componentSections: ComponentSection[] = [
           },
         ],
       },
+    ],
+  },
+  {
+    id: "plan-tab",
+    letter: "C",
+    title: "Plan Tab",
+    description:
+      "The Plan Tab is where Shadow builds and the expert manages collaborative task plans. Think of it like Cursor's Plan Mode — a structured checklist that can compose multiple Skills into a single workflow. The expert reviews, adds their own steps, checks items off, and has full control. Plans live here, not inline in chat.",
+    subSections: [
       {
-        id: "c-chat-interaction",
-        title: "Chat Interaction",
+        id: "p-plan-structure",
+        title: "Plan Structure",
         description:
-          "The core conversational interface — input, messages, and Skill execution flow.",
+          "A plan is a to-do checklist composed from one or more Skills, plus any custom steps the expert adds.",
         specs: [
           {
-            id: "c-input",
-            name: "Chat input",
+            id: "p-multi-skill",
+            name: "Multi-Skill composition",
             description:
-              "Text input field with send button. Supports natural language questions, commands, and follow-ups.",
+              "Shadow analyzes the expert's request and identifies every relevant Skill. It combines steps from multiple Skills into a single, ordered plan. Each to-do item is tagged with the Skill it belongs to.",
             guidelines: [
-              "Enter key sends the message. Shift+Enter for newline.",
-              "Input auto-resizes up to 4 lines, then scrolls.",
-              "Show a subtle placeholder: 'Ask Shadow anything...'",
+              "Each Skill group has a header with its name and a 'Skill' badge.",
+              "Steps are shown in the order they should be performed, even across Skills.",
+              "Shadow includes context lookups (e.g., customer history) as plan items when relevant.",
             ],
           },
           {
-            id: "c-messages",
-            name: "Message history",
+            id: "p-custom-steps",
+            name: "Expert's own steps",
             description:
-              "Scrollable chat history. Expert messages on the right, Shadow responses on the left. System messages (Skill detection, status) in a neutral style.",
+              "The expert can add their own custom steps to any plan using the '+ Add your own step' button. These appear with a 'You' badge.",
             guidelines: [
-              "Auto-scroll to the latest message.",
-              "Shadow messages support rich formatting: bold, lists, code blocks, inline Skill references.",
-              "Long messages are collapsible with a 'Show more' toggle.",
+              "Custom steps can be added at any position (appended to the end by default).",
+              "Expert-added steps are tagged so Shadow learns what's missing from the original Skills.",
+              "If the same custom step is added to 3+ plans, Shadow suggests incorporating it into the Skill.",
             ],
           },
           {
-            id: "c-skill-execution",
-            name: "Skill Execution Preview (Agent Mode only)",
+            id: "p-remove-steps",
+            name: "Remove steps",
             description:
-              "When Shadow identifies an executable Skill, it presents a preview card showing the Skill name, every parameter and value, and three action buttons: Approve & Execute, Review & Edit, and Skip.",
+              "The expert can remove any step from the plan by hovering and clicking the remove button.",
             guidelines: [
-              "Only appears in Agent Mode.",
-              "The preview must show every field that will be affected — no hidden actions.",
-              "Review & Edit makes all fields editable inline before approval.",
-              "After approval, show execution status and a confirmation with result details.",
-              "Execution is never automatic — the expert always initiates it.",
+              "Removed steps are tracked — if the expert consistently removes a step, Shadow stops including it.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "p-lifecycle",
+        title: "Plan Lifecycle",
+        description:
+          "A plan moves through clear states: Draft → Active → Complete.",
+        specs: [
+          {
+            id: "p-draft",
+            name: "Draft state",
+            description:
+              "When Shadow creates a plan, it starts as a draft. The expert reviews the steps and clicks 'Accept Plan' to activate it.",
+            states: [
+              "Draft: plan is visible but checkboxes are disabled. Expert can still add/remove steps.",
+              "The Accept button is prominent — this is a deliberate opt-in.",
+            ],
+          },
+          {
+            id: "p-active",
+            name: "Active state",
+            description:
+              "Once accepted, checkboxes are enabled. The expert checks off steps as they complete them. A progress bar tracks completion.",
+            states: [
+              "Active: checkboxes enabled, progress bar visible.",
+              "Partial: some steps done — progress bar fills proportionally.",
+            ],
+          },
+          {
+            id: "p-complete",
+            name: "Complete state",
+            description:
+              "When all steps are checked off, the plan shows a completion card. Shadow suggests that it can handle this automatically next time.",
+          },
+        ],
+      },
+      {
+        id: "p-history",
+        title: "Plan History",
+        description:
+          "The Plan Tab maintains a history of completed plans so the expert can revisit past workflows.",
+        specs: [
+          {
+            id: "p-history-list",
+            name: "History view",
+            description:
+              "A list of previously completed plans, showing name, date, and step count. Clicking a past plan expands it for review.",
+            guidelines: [
+              "History is sorted by most recent first.",
+              "Past plans are read-only — the expert can view steps but not modify them.",
+              "Useful for training, audit, and understanding patterns over time.",
             ],
           },
         ],
@@ -377,7 +438,7 @@ export const componentSections: ComponentSection[] = [
   },
   {
     id: "skills-tab",
-    letter: "C",
+    letter: "D",
     title: "Skills Tab",
     description:
       "The Skills Tab is where the expert views, manages, and shares their Skills. Each Skill clearly separates core logic from personalization, and shows relationships to other Skills.",
@@ -537,7 +598,7 @@ export const componentSections: ComponentSection[] = [
   },
   {
     id: "inline-suggestions",
-    letter: "D",
+    letter: "E",
     title: "Proactive Messages",
     description:
       "Shadow and the expert interact like two colleagues on Slack who are looking at the same screen. Shadow doesn't overlay floating UI elements on the page — it communicates through the chat. When Shadow notices something relevant (a matching Skill, a customer history detail, a behavioral pattern), it sends a proactive message in the conversation, just like a colleague would tap you and say 'Hey, heads up.' The chat is always the single channel of communication.",

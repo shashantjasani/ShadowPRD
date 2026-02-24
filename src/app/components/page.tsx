@@ -15,7 +15,7 @@ function MockRailFrame({
   children,
   activeTab,
   onTabChange,
-  tabs = ["Record", "Chat", "Skills"],
+  tabs = ["Record", "Chat", "Plan", "Skills"],
   showTabs = true,
 }: {
   children: React.ReactNode;
@@ -150,6 +150,94 @@ function MockRecordTab() {
    Section B: Chat Tab
    ═══════════════════════════════════════════════════ */
 
+function MockChatTab() {
+  const [messages, setMessages] = useState([
+    { role: "user" as const, text: "How do I reconcile a bank account in QBO?" },
+    { role: "shadow" as const, text: "I have a Skill for that — qbo-reconcile-account. Want me to build a Plan you can walk through, or should I run it for you?" },
+  ]);
+  const [showExecution, setShowExecution] = useState(false);
+  const [executionState, setExecutionState] = useState<"preview" | "approved" | null>(null);
+  const [input, setInput] = useState("");
+
+  function handleSend() {
+    if (!input.trim()) return;
+    const text = input.trim();
+    setInput("");
+    setMessages((m) => [...m, { role: "user", text }]);
+    if (text.toLowerCase().includes("run") || text.toLowerCase().includes("execute") || text.toLowerCase().includes("do it")) {
+      setTimeout(() => { setShowExecution(true); setExecutionState("preview"); }, 400);
+    } else if (text.toLowerCase().includes("plan")) {
+      setTimeout(() => {
+        setMessages((m) => [...m, { role: "shadow", text: "Done — I built a 6-step plan in the Plan tab. It covers reconciliation, matching, and finishing. Check it out and add any steps you want." }]);
+      }, 500);
+    } else {
+      setTimeout(() => {
+        setMessages((m) => [...m, { role: "shadow", text: "Got it. Let me know if you'd like me to plan it out in the Plan tab or execute it directly." }]);
+      }, 500);
+    }
+  }
+
+  function handleApprove() {
+    setExecutionState("approved");
+    setTimeout(() => {
+      setMessages((m) => [...m, { role: "shadow", text: "✅ Reconciliation complete. 12 transactions matched, difference is $0.00. The period Jan 1–31 is now closed." }]);
+      setShowExecution(false);
+    }, 1200);
+  }
+
+  return (
+    <MockRailFrame activeTab="Chat">
+      <div className="space-y-3">
+        <div className="space-y-2.5 max-h-[380px] overflow-y-auto">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${msg.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-zinc-100 text-zinc-700 rounded-bl-sm"}`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {showExecution && (
+            <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-2">Skill Execution Preview</div>
+              <div className="text-[13px] font-semibold text-zinc-800 mb-2">qbo-reconcile-account</div>
+              <div className="space-y-1 mb-3">
+                {[{ field: "Account", value: "Business Checking (****4521)" }, { field: "Period", value: "Jan 1 – Jan 31, 2026" }, { field: "Match method", value: "Auto-match by amount + date" }].map((f) => (
+                  <div key={f.field} className="flex justify-between rounded bg-white px-2 py-1 text-[11px]">
+                    <span className="text-zinc-500">{f.field}</span>
+                    <span className="font-medium text-zinc-700">{f.value}</span>
+                  </div>
+                ))}
+              </div>
+              {executionState === "preview" ? (
+                <div className="flex gap-2">
+                  <button onClick={handleApprove} className="flex-1 rounded-lg bg-emerald-500 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-600">Approve & Execute</button>
+                  <button className="flex-1 rounded-lg bg-white border border-zinc-200 py-1.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50">Review & Edit</button>
+                  <button onClick={() => setShowExecution(false)} className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-[12px] text-zinc-400 hover:bg-zinc-50">Skip</button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-[12px] text-emerald-600 font-medium">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> Executing…
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
+          <button className="text-zinc-300 hover:text-zinc-500 transition-colors text-lg">📎</button>
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Ask Shadow anything…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
+          <button onClick={handleSend} className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${input.trim() ? "bg-accent text-white" : "bg-zinc-100 text-zinc-300"}`}>↑</button>
+        </div>
+      </div>
+    </MockRailFrame>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   Section C: Plan Tab
+   ═══════════════════════════════════════════════════ */
+
 interface PlanItem {
   id: string;
   text: string;
@@ -168,19 +256,20 @@ const initialPlanItems: PlanItem[] = [
   { id: "p7", text: "Send confirmation to customer via case notes", skill: "case-wrap-up", done: false, addedBy: "shadow" },
 ];
 
-function MockChatTab() {
-  const [mode, setMode] = useState<"Plan" | "Agent">("Plan");
+const skillLabels: Record<string, string> = {
+  "ctx-customer-history": "Customer History",
+  "qbo-reconcile-account": "Reconcile Account",
+  "qbo-generate-report": "Generate Report",
+  "case-wrap-up": "Case Wrap-Up",
+  "_custom": "Your additions",
+};
+
+function MockPlanTab() {
   const [planItems, setPlanItems] = useState<PlanItem[]>(initialPlanItems);
   const [newItemText, setNewItemText] = useState("");
   const [showAddInput, setShowAddInput] = useState(false);
   const [planAccepted, setPlanAccepted] = useState(false);
-  const [agentMessages, setAgentMessages] = useState([
-    { role: "user" as const, text: "Reconcile my business checking for January" },
-    { role: "shadow" as const, text: "I found a matching Skill: qbo-reconcile-account. I can execute this for you — let me pull up the details." },
-  ]);
-  const [showExecution, setShowExecution] = useState(false);
-  const [executionState, setExecutionState] = useState<"preview" | "approved" | null>(null);
-  const [input, setInput] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<"active" | "history">("active");
 
   const skillGroups = planItems.reduce<Record<string, PlanItem[]>>((acc, item) => {
     const key = item.skill || "_custom";
@@ -206,76 +295,62 @@ function MockChatTab() {
     setShowAddInput(false);
   }
 
-  function handleAgentSend() {
-    if (!input.trim()) return;
-    const text = input.trim();
-    setInput("");
-    setAgentMessages((m) => [...m, { role: "user", text }]);
-    setTimeout(() => {
-      setShowExecution(true);
-      setExecutionState("preview");
-    }, 400);
-  }
-
-  function handleApprove() {
-    setExecutionState("approved");
-    setTimeout(() => {
-      setAgentMessages((m) => [...m, { role: "shadow", text: "✅ Reconciliation complete. 12 transactions matched, difference is $0.00. The period Jan 1–31 is now closed." }]);
-      setShowExecution(false);
-    }, 1200);
-  }
-
-  const skillLabels: Record<string, string> = {
-    "ctx-customer-history": "Customer History",
-    "qbo-reconcile-account": "Reconcile Account",
-    "qbo-generate-report": "Generate Report",
-    "case-wrap-up": "Case Wrap-Up",
-    "_custom": "Your additions",
-  };
-
   return (
-    <MockRailFrame activeTab="Chat" tabs={["Record", "Chat", "Skills"]}>
+    <MockRailFrame activeTab="Plan">
       <div className="space-y-3">
-        {/* Mode toggle */}
-        <div className="flex rounded-lg border border-zinc-200 overflow-hidden">
-          {(["Plan", "Agent"] as const).map((m) => (
-            <button key={m} onClick={() => setMode(m)}
-              className={`flex-1 px-3 py-2 text-[12px] font-medium transition-colors ${mode === m ? "bg-accent/10 text-accent" : "bg-zinc-50 text-zinc-400 hover:text-zinc-600"}`}>
-              {m} Mode
-            </button>
-          ))}
-        </div>
-        <div className="text-[11px] text-zinc-400 leading-relaxed">
-          {mode === "Plan"
-            ? "Shadow builds a plan from multiple Skills. Review, reorder, and add your own steps."
-            : "Shadow can execute Skills on your behalf — with your approval."}
+        {/* Plan selector */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSelectedPlan("active")}
+            className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              selectedPlan === "active" ? "bg-accent/10 text-accent" : "text-zinc-400 hover:text-zinc-600"
+            }`}
+          >
+            Active Plan
+          </button>
+          <button
+            onClick={() => setSelectedPlan("history")}
+            className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              selectedPlan === "history" ? "bg-accent/10 text-accent" : "text-zinc-400 hover:text-zinc-600"
+            }`}
+          >
+            History
+          </button>
+          <span className="ml-auto rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+            {doneCount}/{planItems.length}
+          </span>
         </div>
 
-        {/* ── Plan Mode ── */}
-        {mode === "Plan" && (
-          <>
-            {/* User message */}
-            <div className="flex justify-end">
-              <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
-                Customer needs Jan reconciliation for their business checking, summary report, and a confirmation note on the case.
+        {selectedPlan === "history" ? (
+          <div className="space-y-2">
+            {[
+              { name: "QBO expense categorization", date: "Today, 10:15 AM", steps: 4, status: "completed" },
+              { name: "Client invoice from estimate", date: "Yesterday, 3:30 PM", steps: 5, status: "completed" },
+              { name: "Payroll adjustment", date: "Feb 18, 11:00 AM", steps: 3, status: "completed" },
+            ].map((p) => (
+              <div key={p.name} className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 hover:border-accent/30 transition-colors cursor-pointer">
+                <div>
+                  <div className="text-[12px] font-medium text-zinc-700">{p.name}</div>
+                  <div className="text-[11px] text-zinc-400">{p.date} · {p.steps} steps</div>
+                </div>
+                <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">Done</span>
               </div>
-            </div>
-
-            {/* Shadow plan intro */}
-            <div className="rounded-xl bg-zinc-100 px-3 py-2 text-[12px] text-zinc-700 leading-relaxed">
-              I&apos;ve built a plan combining <strong>3 Skills</strong> plus a context lookup. Review the steps below — check them off as you go, or add your own.
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Progress bar */}
+            <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+                style={{ width: `${planItems.length > 0 ? (doneCount / planItems.length) * 100 : 0}%` }}
+              />
             </div>
 
             {/* Plan card */}
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-              {/* Plan header */}
               <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-zinc-800">Plan</span>
-                  <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                    {doneCount}/{planItems.length}
-                  </span>
-                </div>
+                <div className="text-[13px] font-semibold text-zinc-800">Jan Reconciliation</div>
                 {!planAccepted ? (
                   <button
                     onClick={() => setPlanAccepted(true)}
@@ -288,8 +363,7 @@ function MockChatTab() {
                 )}
               </div>
 
-              {/* Grouped to-do items */}
-              <div className="max-h-[260px] overflow-y-auto divide-y divide-zinc-50">
+              <div className="max-h-[240px] overflow-y-auto divide-y divide-zinc-50">
                 {Object.entries(skillGroups).map(([skillKey, items]) => (
                   <div key={skillKey} className="px-3 py-2">
                     <div className="flex items-center gap-1.5 mb-1.5">
@@ -343,7 +417,6 @@ function MockChatTab() {
                 ))}
               </div>
 
-              {/* Add item */}
               <div className="border-t border-zinc-100 px-3 py-2">
                 {showAddInput ? (
                   <div className="flex items-center gap-2">
@@ -370,76 +443,13 @@ function MockChatTab() {
               </div>
             </div>
 
-            {/* Progress & convert to agent */}
-            {planAccepted && doneCount > 0 && (
-              <div className="space-y-2">
-                <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-emerald-400 transition-all duration-500"
-                    style={{ width: `${(doneCount / planItems.length) * 100}%` }}
-                  />
-                </div>
-                {doneCount === planItems.length ? (
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[12px] text-emerald-700 font-medium text-center">
-                    Plan complete! All {planItems.length} steps done.
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setMode("Agent")}
-                    className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
-                  >
-                    Switch to Agent Mode to execute remaining steps →
-                  </button>
-                )}
+            {/* Completion */}
+            {planAccepted && doneCount === planItems.length && planItems.length > 0 && (
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5 text-center">
+                <div className="text-[12px] font-semibold text-emerald-700">Plan complete!</div>
+                <div className="text-[11px] text-emerald-600 mt-0.5">Shadow can handle this automatically next time.</div>
               </div>
             )}
-          </>
-        )}
-
-        {/* ── Agent Mode ── */}
-        {mode === "Agent" && (
-          <>
-            <div className="space-y-2.5 max-h-[340px] overflow-y-auto">
-              {agentMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${msg.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-zinc-100 text-zinc-700 rounded-bl-sm"}`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {showExecution && (
-                <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-3">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-2">Skill Execution Preview</div>
-                  <div className="text-[13px] font-semibold text-zinc-800 mb-2">qbo-reconcile-account</div>
-                  <div className="space-y-1 mb-3">
-                    {[{ field: "Account", value: "Business Checking (****4521)" }, { field: "Period", value: "Jan 1 – Jan 31, 2026" }, { field: "Match method", value: "Auto-match by amount + date" }].map((f) => (
-                      <div key={f.field} className="flex justify-between rounded bg-white px-2 py-1 text-[11px]">
-                        <span className="text-zinc-500">{f.field}</span>
-                        <span className="font-medium text-zinc-700">{f.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {executionState === "preview" ? (
-                    <div className="flex gap-2">
-                      <button onClick={handleApprove} className="flex-1 rounded-lg bg-emerald-500 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-600">Approve & Execute</button>
-                      <button className="flex-1 rounded-lg bg-white border border-zinc-200 py-1.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50">Review & Edit</button>
-                      <button onClick={() => setShowExecution(false)} className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-[12px] text-zinc-400 hover:bg-zinc-50">Skip</button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-[12px] text-emerald-600 font-medium">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> Executing…
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
-              <button className="text-zinc-300 hover:text-zinc-500 transition-colors text-lg">📎</button>
-              <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAgentSend()}
-                placeholder="Ask Shadow anything…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
-              <button onClick={handleAgentSend} className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${input.trim() ? "bg-accent text-white" : "bg-zinc-100 text-zinc-300"}`}>↑</button>
-            </div>
           </>
         )}
       </div>
@@ -448,7 +458,7 @@ function MockChatTab() {
 }
 
 /* ═══════════════════════════════════════════════════
-   Section C: Skills Tab
+   Section D: Skills Tab
    ═══════════════════════════════════════════════════ */
 
 type StepTag = "core" | "yours";
@@ -651,22 +661,10 @@ const proactiveThread: ProactiveMsg[] = [
   },
 ];
 
-const proactivePlanItems = [
-  { id: "pp1", text: "Open Bookkeeping → Reconcile in QBO", skill: "qbo-reconcile-account", done: false },
-  { id: "pp2", text: "Select Business Checking (****4521), set period Jan 1–31", skill: "qbo-reconcile-account", done: false },
-  { id: "pp3", text: "Auto-match transactions by amount + date", skill: "qbo-reconcile-account", done: false },
-  { id: "pp4", text: "Review unmatched — check the $247 Office Supplies line (David's prior issue)", skill: "qbo-reconcile-account", done: false },
-  { id: "pp5", text: "Resolve discrepancies, confirm difference is $0.00", skill: "qbo-reconcile-account", done: false },
-  { id: "pp6", text: "Finish reconciliation", skill: "qbo-reconcile-account", done: false },
-];
-
 function MockProactiveMessages() {
   const [visibleCount, setVisibleCount] = useState(2);
   const [reactions, setReactions] = useState<Record<string, boolean>>({});
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState("Chat");
-  const [planCreated, setPlanCreated] = useState(false);
-  const [planItems, setPlanItems] = useState(proactivePlanItems);
 
   const visible = proactiveThread.slice(0, visibleCount);
   const hasMore = visibleCount < proactiveThread.length;
@@ -681,18 +679,7 @@ function MockProactiveMessages() {
 
   function handleAction(id: string, result: string) {
     setActionResults((a) => ({ ...a, [id]: result }));
-    if (result === "plan") {
-      setPlanCreated(true);
-      setTimeout(() => setActiveTab("Plan"), 600);
-    }
   }
-
-  function togglePlanItem(id: string) {
-    setPlanItems((items) => items.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
-  }
-
-  const planDone = planItems.filter((i) => i.done).length;
-  const tabs = planCreated ? ["Record", "Chat", "Plan", "Skills"] : ["Record", "Chat", "Skills"];
 
   const badgeColors: Record<ProactiveBadge, string> = {
     "Customer history": "bg-blue-50 text-blue-600 border-blue-200",
@@ -701,181 +688,102 @@ function MockProactiveMessages() {
   };
 
   return (
-    <MockRailFrame activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs}>
-      {/* ── Chat tab ── */}
-      {activeTab === "Chat" && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] text-zinc-500">Watching: <strong className="text-zinc-700">Reconcile — Business Checking</strong></span>
-          </div>
+    <MockRailFrame activeTab="Chat">
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-zinc-500">Watching: <strong className="text-zinc-700">Reconcile — Business Checking</strong></span>
+        </div>
 
-          <div className="space-y-3 max-h-[340px] overflow-y-auto">
-            {visible.map((msg) => (
-              <div key={msg.id}>
-                {msg.role === "expert" ? (
-                  <div className="flex justify-end">
-                    <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
-                      {msg.text}
-                    </div>
+        <div className="space-y-3 max-h-[380px] overflow-y-auto">
+          {visible.map((msg) => (
+            <div key={msg.id}>
+              {msg.role === "expert" ? (
+                <div className="flex justify-end">
+                  <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                    {msg.text}
                   </div>
-                ) : (
-                  <div className="max-w-[92%]">
-                    {msg.badge && (
-                      <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold mb-1 ${badgeColors[msg.badge]}`}>
-                        <span className="flex h-3 w-3 items-center justify-center rounded bg-current/10 text-[7px]">
-                          {msg.badge === "Customer history" ? "📋" : msg.badge === "Skill match" ? "⚡" : "👁"}
-                        </span>
-                        {msg.badge}
+                </div>
+              ) : (
+                <div className="max-w-[92%]">
+                  {msg.badge && (
+                    <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold mb-1 ${badgeColors[msg.badge]}`}>
+                      <span className="flex h-3 w-3 items-center justify-center rounded bg-current/10 text-[7px]">
+                        {msg.badge === "Customer history" ? "📋" : msg.badge === "Skill match" ? "⚡" : "👁"}
+                      </span>
+                      {msg.badge}
+                    </div>
+                  )}
+                  <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
+                    {msg.text}
+
+                    {msg.action && !actionResults[msg.id] && (
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={() => handleAction(msg.id, msg.action!.result)}
+                          className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
+                        >
+                          {msg.action.label}
+                        </button>
+                        <button className="rounded-lg bg-zinc-200 px-3 py-1 text-[11px] text-zinc-500 hover:bg-zinc-300 transition-colors">
+                          Not now
+                        </button>
                       </div>
                     )}
-                    <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
-                      {msg.text}
 
-                      {msg.action && !actionResults[msg.id] && (
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            onClick={() => handleAction(msg.id, msg.action!.result)}
-                            className="rounded-lg bg-accent px-3 py-1 text-[11px] font-semibold text-white hover:bg-accent/90 transition-colors"
-                          >
-                            {msg.action.label}
-                          </button>
-                          <button className="rounded-lg bg-zinc-200 px-3 py-1 text-[11px] text-zinc-500 hover:bg-zinc-300 transition-colors">
-                            Not now
-                          </button>
-                        </div>
-                      )}
-
-                      {actionResults[msg.id] === "plan" && (
-                        <button
-                          onClick={() => setActiveTab("Plan")}
-                          className="mt-2 w-full rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1.5 text-[11px] text-accent font-medium hover:bg-accent/10 transition-colors text-left"
-                        >
-                          Plan created → Open Plan tab
-                        </button>
-                      )}
-                      {actionResults[msg.id] === "added" && (
-                        <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] text-emerald-700 font-medium">
-                          Added &quot;Pull Transaction Detail report&quot; as an optional step in your Skill
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-1 ml-1">
-                      <button
-                        onClick={() => toggleReaction(msg.id)}
-                        className={`rounded-full px-1.5 py-0.5 text-[11px] transition-colors ${
-                          reactions[msg.id] ? "bg-accent/10 text-accent" : "text-zinc-300 hover:text-zinc-500"
-                        }`}
-                      >
-                        👍
-                      </button>
-                      <span className="text-[10px] text-zinc-300">·</span>
-                      <span className="text-[10px] text-zinc-400">just now</span>
-                    </div>
+                    {actionResults[msg.id] === "plan" && (
+                      <div className="mt-2 rounded-lg border border-accent/20 bg-accent/5 px-2.5 py-1.5 text-[11px] text-accent font-medium">
+                        Plan created in the <strong>Plan</strong> tab — switch over to review and start working through it.
+                      </div>
+                    )}
+                    {actionResults[msg.id] === "added" && (
+                      <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] text-emerald-700 font-medium">
+                        Added &quot;Pull Transaction Detail report&quot; as an optional step in your Skill
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
 
-          {hasMore ? (
-            <button
-              onClick={showNext}
-              className="w-full rounded-xl bg-accent/10 px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
-            >
-              Continue conversation →
-            </button>
-          ) : (
-            <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-              <span className="flex gap-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "300ms" }} />
-              </span>
-              Shadow is watching…
+                  <div className="flex items-center gap-2 mt-1 ml-1">
+                    <button
+                      onClick={() => toggleReaction(msg.id)}
+                      className={`rounded-full px-1.5 py-0.5 text-[11px] transition-colors ${
+                        reactions[msg.id] ? "bg-accent/10 text-accent" : "text-zinc-300 hover:text-zinc-500"
+                      }`}
+                    >
+                      👍
+                    </button>
+                    <span className="text-[10px] text-zinc-300">·</span>
+                    <span className="text-[10px] text-zinc-400">just now</span>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
-            <input type="text" readOnly placeholder="Reply to Shadow…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-300">↑</div>
-          </div>
+          ))}
         </div>
-      )}
 
-      {/* ── Plan tab ── */}
-      {activeTab === "Plan" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-zinc-800">Reconciliation Plan</span>
-              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                {planDone}/{planItems.length}
-              </span>
-            </div>
-            <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-500 uppercase tracking-wide">
-              qbo-reconcile-account
-            </span>
-          </div>
-
-          <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-emerald-400 transition-all duration-500"
-              style={{ width: `${(planDone / planItems.length) * 100}%` }}
-            />
-          </div>
-
-          <div className="space-y-1">
-            {planItems.map((item, i) => (
-              <div
-                key={item.id}
-                onClick={() => togglePlanItem(item.id)}
-                className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
-                  item.done ? "border-emerald-200 bg-emerald-50/50 opacity-60" : "border-zinc-200 hover:border-accent/30 bg-white"
-                }`}
-              >
-                <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                  item.done ? "border-emerald-400 bg-emerald-400 text-white" : "border-zinc-300"
-                }`}>
-                  {item.done && (
-                    <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className={`text-[12px] leading-snug ${item.done ? "line-through text-zinc-400" : "text-zinc-700"}`}>
-                    <span className="text-zinc-400 mr-1.5">{i + 1}.</span>
-                    {item.text}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {planDone === planItems.length && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5 text-center">
-              <div className="text-[12px] font-semibold text-emerald-700">All steps complete!</div>
-              <div className="text-[11px] text-emerald-600 mt-0.5">Shadow can handle this automatically next time in Agent Mode.</div>
-            </div>
-          )}
-
+        {hasMore ? (
           <button
-            onClick={() => setActiveTab("Chat")}
-            className="w-full rounded-xl bg-zinc-100 px-4 py-2 text-[12px] text-zinc-500 hover:bg-zinc-200 transition-colors"
+            onClick={showNext}
+            className="w-full rounded-xl bg-accent/10 px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
           >
-            ← Back to Chat
+            Continue conversation →
           </button>
-        </div>
-      )}
+        ) : (
+          <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+            <span className="flex gap-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </span>
+            Shadow is watching…
+          </div>
+        )}
 
-      {/* ── Other tabs (placeholder) ── */}
-      {activeTab !== "Chat" && activeTab !== "Plan" && (
-        <div className="flex items-center justify-center py-12 text-[12px] text-zinc-400">
-          {activeTab} tab
+        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2">
+          <input type="text" readOnly placeholder="Reply to Shadow…" className="flex-1 text-[13px] outline-none placeholder:text-zinc-400" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-300">↑</div>
         </div>
-      )}
+      </div>
     </MockRailFrame>
   );
 }
@@ -887,6 +795,7 @@ function MockProactiveMessages() {
 const sectionMockups: Record<string, React.ReactNode> = {
   "record-tab": <MockRecordTab />,
   "chat-tab": <MockChatTab />,
+  "plan-tab": <MockPlanTab />,
   "skills-tab": <MockSkillsTab />,
   "inline-suggestions": <MockProactiveMessages />,
 };

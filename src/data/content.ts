@@ -10,8 +10,10 @@ export const hero = {
   analogy: [
     { cursor: "IDE / Code Editor", shadow: "Chrome Extension + Desktop Client" },
     { cursor: "Codebase indexing", shadow: "Session capture & Expert Profile" },
-    { cursor: "Autocomplete / Ghost text", shadow: "Inline suggestions & contextual nudges" },
-    { cursor: "Chat panel (Plan / Agent mode)", shadow: "Right Panel Chat (Plan / Agent mode)" },
+    { cursor: "Thinking / Reasoning display", shadow: "Shadow Reasoning (transparent thought process)" },
+    { cursor: "Autocomplete & proactive suggestions", shadow: "Proactive Messages (contextual nudges in chat)" },
+    { cursor: "Chat panel", shadow: "Right Panel Chat" },
+    { cursor: "Plan mode (to-do checklist)", shadow: "Plan Tab (multi-Skill task plans)" },
     { cursor: "Rules & .cursorrules", shadow: "Expert preferences & personalization" },
     { cursor: "Agent Skills", shadow: "Shadow Skills (core + personalized steps)" },
     { cursor: "Multi-file edits", shadow: "Multi-step workflow automation" },
@@ -45,7 +47,7 @@ export const background = {
     {
       stage: "Serve Up",
       description:
-        "Put knowledge where it's needed, personalized to who's receiving it. Right Panel Chat gives agents in-context help tuned to their history. Pre-call skill fetching draws from the expert's own library. Shadow Flows library lets anyone search expert workflows. Coaching dashboards give managers specific, actionable data.",
+        "Put knowledge where it's needed, personalized to who's receiving it. Right Panel Chat gives experts in-context help with Shadow Reasoning showing its thought process. Pre-call Skill fetching draws from the expert's own library and the shared Intuit-wide library. Proactive Messages surface relevant context mid-call. Plans compose Skills into step-by-step workflows the expert can walk through.",
     },
   ],
   contextMemory: {
@@ -106,12 +108,12 @@ export const background = {
     personalizedSkills:
       "When Shadow generates a Skill for an expert, it doesn't produce a generic how-to. It produces a version tuned to that expert's style — their navigation patterns, their phrasing, their shortcuts. Two experts handling the same contact topic will get Skills that reflect their individual approaches. This is the difference between a template and an assistant that actually knows you.",
     aiTwinPath:
-      "The Expert Profile is the foundation of an HI Twin. As the profile accumulates enough depth — enough sessions, enough patterns, enough validated Skills — it reaches a threshold where it can represent the expert's decision-making in a meaningful way. Phase 1 doesn't build the Twin. It builds the memory that makes the Twin possible.",
+      "The Expert Profile is the foundation of an HI Twin. As the profile accumulates enough depth — enough sessions, enough patterns, enough validated Skills — it reaches a threshold where it can represent the expert's decision-making in a meaningful way. The Chrome Extension doesn't build the Twin. It builds the memory that makes the Twin possible.",
     phase1Value:
-      "In Phase 1, the Chrome Extension focuses on providing immediate, personal value to the expert. Shadow acts like an assistant that's been watching over your shoulder — it knows the Skills you've built, the patterns you follow, and the context you care about. Pre-call skill fetching is personalized to the expert's history. Post-call summaries reflect their style. The goal is simple: from Day 1, Shadow should feel like it knows you.",
+      "The Chrome Extension focuses on providing immediate, personal value to the expert from Day 1. Shadow acts like an assistant that's been watching over your shoulder — it knows the Skills you've built, the patterns you follow, and the context you care about. Pre-call Skill fetching is personalized to the expert's history. Post-call summaries reflect their style. Shadow Reasoning shows its thought process so the expert always understands why it's suggesting something. The goal is simple: from the first call, Shadow should feel like it knows you.",
   },
   platformConnection:
-    "Shadow powers the \"Learn\" phase of the AI x HI Platform flywheel (Collaborate → Learn → Improve). Captured behavior becomes Structured Expertise Tokens (SETs) that feed the Living Knowledge Graph and enable HI Twins and Agent Gym downstream.",
+    "Shadow powers the \"Learn\" phase of the AI x HI Platform flywheel (Collaborate → Learn → Improve). Captured expert behavior and validated Skills become the structured knowledge that the platform uses to improve AI agents, enable cross-expert learning, and build toward autonomous execution over time.",
   valueProps: [
     {
       role: "Experts (knowledge source)",
@@ -121,7 +123,7 @@ export const background = {
     {
       role: "New / developing agents (knowledge consumer)",
       benefit:
-        "On-demand guidance for unfamiliar issues. Searchable library of expert workflows (Shadow Flows). Real examples instead of abstract docs. Real-time contextual nudges during calls (stretch).",
+        "On-demand guidance for unfamiliar issues. Searchable shared Skills library with real expert workflows. Real examples instead of abstract docs. Proactive Messages surface relevant context and Skills during calls.",
     },
     {
       role: "Managers / coaches (knowledge enabler)",
@@ -152,7 +154,7 @@ export const scope = {
       "Cross-application capture: screen recording, system audio (transcript only leaves device), window focus tracking, and application-level events across all open apps.",
       "The Desktop Client's unique value is seeing the full workflow when an expert leaves Chrome — copying data into a spreadsheet, checking a Slack thread, updating a CRM record, or running a desktop calculator.",
       "PII detected and redacted on-device before any upload. Raw audio never leaves the machine.",
-      "Shadow Flows library, coaching dashboard, case summarization into SFDC/CRM.",
+      "Shared Skills library, coaching dashboard, case summarization into SFDC/CRM.",
       "IT-deployed app (Windows/macOS), system tray. Same consent and privacy rules as the extension.",
     ],
   },
@@ -169,7 +171,7 @@ export const scope = {
     { capability: "Create Skills from session", chrome: true, desktop: false },
     { capability: "Context & Memory Service: read customer history", chrome: true, desktop: true },
     { capability: "Context & Memory Service: write session back", chrome: true, desktop: true },
-    { capability: "Shadow Flows library", chrome: true, desktop: true, note: "Chrome: consume; Desktop: consume + contribute" },
+    { capability: "Shared Skills library", chrome: true, desktop: true, note: "Both consume; Chrome also contributes via Skill creation" },
     { capability: "Coaching dashboard", chrome: false, desktop: true },
     { capability: "PII redaction before upload", chrome: true, desktop: true },
   ],
@@ -281,7 +283,7 @@ export const metrics = {
   ],
   whereThisGoes: {
     intro:
-      "Phase 1 builds the foundation — capture, Skills, personalization, expert validation. What comes next depends on the depth and quality of what we collect, but the trajectory is clear:",
+      "The Chrome Extension builds the foundation — capture, Skills, personalization, expert validation. What comes next depends on the depth and quality of what we collect, but the trajectory is clear:",
     items: [
       {
         title: "HI Twins",

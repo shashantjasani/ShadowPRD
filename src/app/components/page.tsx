@@ -67,7 +67,7 @@ function MockRecordTab() {
   const [showPastSessions, setShowPastSessions] = useState(false);
 
   return (
-    <MockRailFrame activeTab="Record" tabs={["Record", "Chat", "Skills"]}>
+    <MockRailFrame activeTab="Record">
       <div className="space-y-4">
         {recording ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
@@ -150,14 +150,65 @@ function MockRecordTab() {
    Section B: Chat Tab
    ═══════════════════════════════════════════════════ */
 
+function ThinkingBlock({
+  steps,
+  collapsed: initialCollapsed = false,
+  label,
+}: {
+  steps: { text: string; done: boolean }[];
+  collapsed?: boolean;
+  label?: string;
+}) {
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+
+  return (
+    <div className="max-w-[92%]">
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex items-center gap-1.5 text-[10px] text-zinc-400 hover:text-zinc-600 transition-colors mb-0.5"
+      >
+        <svg className={`h-3 w-3 transition-transform ${collapsed ? "" : "rotate-90"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="flex h-3 w-3 items-center justify-center rounded bg-zinc-200 text-[7px] font-bold text-zinc-500">S</span>
+        {collapsed
+          ? <span className="italic">{label || "Shadow reasoned…"}</span>
+          : <span className="italic">Shadow is thinking…</span>
+        }
+      </button>
+      {!collapsed && (
+        <div className="ml-[18px] rounded-lg border-l-2 border-zinc-200 bg-zinc-50/80 px-3 py-2 space-y-1">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-start gap-1.5 text-[10px] leading-relaxed text-zinc-500 italic">
+              <span className="mt-0.5 shrink-0 text-[9px]">{step.done ? "✓" : "…"}</span>
+              <span>{step.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MockChatTab() {
-  const [messages, setMessages] = useState([
-    { role: "user" as const, text: "How do I reconcile a bank account in QBO?" },
-    { role: "shadow" as const, text: "I have a Skill for that — qbo-reconcile-account. Want me to build a Plan you can walk through, or should I run it for you?" },
+  const [messages, setMessages] = useState<{ role: "user" | "shadow"; text: string }[]>([
+    { role: "user", text: "How do I reconcile a bank account in QBO?" },
   ]);
+  const [showThinking, setShowThinking] = useState(true);
+  const [thinkingDone, setThinkingDone] = useState(false);
   const [showExecution, setShowExecution] = useState(false);
   const [executionState, setExecutionState] = useState<"preview" | "approved" | null>(null);
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    if (showThinking && !thinkingDone) {
+      const timer = setTimeout(() => {
+        setThinkingDone(true);
+        setMessages((m) => [...m, { role: "shadow", text: "I have a Skill for that — qbo-reconcile-account (4 core + 2 personalized steps). Want me to build a Plan you can walk through, or should I run it for you?" }]);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showThinking, thinkingDone]);
 
   function handleSend() {
     if (!input.trim()) return;
@@ -189,8 +240,29 @@ function MockChatTab() {
     <MockRailFrame activeTab="Chat">
       <div className="space-y-3">
         <div className="space-y-2.5 max-h-[380px] overflow-y-auto">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+          {messages.slice(0, 1).map((msg, i) => (
+            <div key={i} className="flex justify-end">
+              <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
+                {msg.text}
+              </div>
+            </div>
+          ))}
+
+          {showThinking && (
+            <ThinkingBlock
+              collapsed={thinkingDone}
+              label="Shadow reasoned about reconciliation Skills"
+              steps={[
+                { text: "Searching your Skills library for \"reconcile\"...", done: true },
+                { text: "Found: qbo-reconcile-account (4 core + 2 yours, v4)", done: true },
+                { text: "Also found: qbo-resolve-discrepancy (6 core + 1 yours)", done: true },
+                { text: "Checking if current page context matches...", done: thinkingDone },
+              ]}
+            />
+          )}
+
+          {messages.slice(1).map((msg, i) => (
+            <div key={i + 1} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed ${msg.role === "user" ? "bg-accent text-white rounded-br-sm" : "bg-zinc-100 text-zinc-700 rounded-bl-sm"}`}>
                 {msg.text}
               </div>
@@ -621,7 +693,7 @@ function MockSkillsTab() {
 }
 
 /* ═══════════════════════════════════════════════════
-   Section D: Proactive Messages
+   Section F: Proactive Messages
    ═══════════════════════════════════════════════════ */
 
 type ProactiveBadge = "Customer history" | "Skill match" | "Pattern observed";
@@ -635,7 +707,22 @@ interface ProactiveMsg {
   reacted?: boolean;
 }
 
-const proactiveThread: ProactiveMsg[] = [
+interface ThinkingStep { text: string; done: boolean }
+
+const proactiveThread: (ProactiveMsg & { thinking?: { label: string; steps: ThinkingStep[] } })[] = [
+  {
+    id: "p0-think",
+    role: "shadow",
+    text: "",
+    thinking: {
+      label: "Shadow checked customer history",
+      steps: [
+        { text: "Querying Context & Memory Service for David Park...", done: true },
+        { text: "Found 1 previous interaction (Feb 1, reconciliation, Marcus)", done: true },
+        { text: "Open item: $247 discrepancy in Supplies — may be relevant", done: true },
+      ],
+    },
+  },
   {
     id: "p1",
     role: "shadow",
@@ -643,6 +730,19 @@ const proactiveThread: ProactiveMsg[] = [
     text: "Heads up — David called about a $247 discrepancy in Supplies last month. That unmatched \"Office Supplies Co.\" line might be the same thing.",
   },
   { id: "p2", role: "expert", text: "Good catch, let me check that one first." },
+  {
+    id: "p2b-think",
+    role: "shadow",
+    text: "",
+    thinking: {
+      label: "Shadow matched a Skill to the current page",
+      steps: [
+        { text: "Detected page: Bookkeeping → Reconcile", done: true },
+        { text: "Searching your Skills library...", done: true },
+        { text: "Match: qbo-reconcile-account (4 core + 2 yours)", done: true },
+      ],
+    },
+  },
   {
     id: "p3",
     role: "shadow",
@@ -652,6 +752,19 @@ const proactiveThread: ProactiveMsg[] = [
   },
   { id: "p4", role: "expert", text: "Plan it — I want to do this one manually." },
   { id: "p5", role: "shadow", text: "Got it. I put together a plan — check the Plan tab when you're ready." },
+  {
+    id: "p5b-think",
+    role: "shadow",
+    text: "",
+    thinking: {
+      label: "Shadow observed a repeating pattern",
+      steps: [
+        { text: "Analyzing session history for reconciliation calls...", done: true },
+        { text: "Pattern: Transaction Detail report pulled 3/3 times", done: true },
+        { text: "Not in current Skill — suggesting addition", done: true },
+      ],
+    },
+  },
   {
     id: "p6",
     role: "shadow",
@@ -698,7 +811,13 @@ function MockProactiveMessages() {
         <div className="space-y-3 max-h-[380px] overflow-y-auto">
           {visible.map((msg) => (
             <div key={msg.id}>
-              {msg.role === "expert" ? (
+              {msg.thinking ? (
+                <ThinkingBlock
+                  steps={msg.thinking.steps}
+                  collapsed
+                  label={msg.thinking.label}
+                />
+              ) : msg.role === "expert" ? (
                 <div className="flex justify-end">
                   <div className="max-w-[85%] rounded-xl px-3 py-2 text-[12px] leading-relaxed bg-accent text-white rounded-br-sm">
                     {msg.text}
@@ -789,6 +908,122 @@ function MockProactiveMessages() {
 }
 
 /* ═══════════════════════════════════════════════════
+   Section E: Reasoning
+   ═══════════════════════════════════════════════════ */
+
+function MockReasoningDemo() {
+  const [phase, setPhase] = useState(0);
+  const [verbosity, setVerbosity] = useState<"detailed" | "summary" | "off">("detailed");
+
+  const scenarios: { title: string; thinking: { text: string; done: boolean }[]; label: string; result: string }[] = [
+    {
+      title: "Pre-call context fetch",
+      label: "Shadow prepared for incoming contact",
+      thinking: [
+        { text: "Incoming contact: David Park — topic: reconciliation", done: true },
+        { text: "Querying Context & Memory Service...", done: true },
+        { text: "Found 1 previous interaction (Feb 1, handled by Marcus)", done: true },
+        { text: "Open item: $247 discrepancy in Supplies", done: true },
+        { text: "Matching topic to your Skills library...", done: true },
+        { text: "2 Skills matched: qbo-reconcile-account, qbo-resolve-discrepancy", done: true },
+      ],
+      result: "David Park is calling about reconciliation. He had a $247 Supplies discrepancy last time — I've pulled your 2 matching Skills.",
+    },
+    {
+      title: "Mid-call Skill match",
+      label: "Shadow matched navigation to Skill step",
+      thinking: [
+        { text: "Detected: Bookkeeping → Reconcile → Business Checking", done: true },
+        { text: "Comparing to active Skill steps...", done: true },
+        { text: "Match: Step 1 of qbo-reconcile-account (Select account)", done: true },
+        { text: "Confidence: 94% — exact navigation match", done: true },
+      ],
+      result: "You're on Step 1 of your reconcile Skill. Next up: enter statement date and ending balance.",
+    },
+    {
+      title: "Post-call analysis",
+      label: "Shadow analyzed session for Skill updates",
+      thinking: [
+        { text: "Analyzing session transcript + captured actions...", done: true },
+        { text: "4 of 4 core Skill steps detected", done: true },
+        { text: "New pattern: Transaction Detail by Account report (filtered)", done: true },
+        { text: "Not in current Skill — flagging as potential addition", done: true },
+        { text: "Generating summary from 14m 22s transcript...", done: true },
+      ],
+      result: "Call complete. I noticed a new step you used (Transaction Detail report) — want me to add it to your Skill?",
+    },
+  ];
+
+  const current = scenarios[phase];
+
+  return (
+    <MockRailFrame activeTab="Chat">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Reasoning Demo</span>
+          <div className="flex gap-0.5 rounded-lg bg-zinc-100 p-0.5">
+            {(["detailed", "summary", "off"] as const).map((v) => (
+              <button key={v} onClick={() => setVerbosity(v)}
+                className={`rounded-md px-2 py-0.5 text-[9px] font-medium transition-colors ${verbosity === v ? "bg-white text-zinc-700 shadow-sm" : "text-zinc-400 hover:text-zinc-600"}`}>
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-1">
+          {scenarios.map((s, i) => (
+            <button key={i} onClick={() => setPhase(i)}
+              className={`flex-1 rounded-lg py-1.5 text-[10px] font-medium transition-colors ${phase === i ? "bg-accent/10 text-accent border border-accent/20" : "bg-zinc-50 text-zinc-400 border border-transparent hover:text-zinc-600"}`}>
+              {s.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-3">
+          {verbosity === "detailed" && (
+            <ThinkingBlock
+              steps={current.thinking}
+              label={current.label}
+            />
+          )}
+
+          {verbosity === "summary" && (
+            <ThinkingBlock
+              steps={current.thinking}
+              collapsed
+              label={current.label}
+            />
+          )}
+
+          <div className="max-w-[92%]">
+            <div className="rounded-xl bg-zinc-100 text-zinc-700 rounded-bl-sm px-3 py-2 text-[12px] leading-relaxed">
+              {current.result}
+            </div>
+          </div>
+
+          {verbosity === "off" && (
+            <div className="text-[10px] text-zinc-400 italic text-center py-1">
+              Reasoning hidden — click &quot;Why?&quot; to see it
+              <button onClick={() => setVerbosity("detailed")} className="ml-1 text-accent hover:underline not-italic font-medium">Why?</button>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+          <div className="flex items-center gap-1.5 text-[10px] mb-1">
+            <span className="font-semibold text-amber-700">Expert can interrupt at any time</span>
+          </div>
+          <div className="text-[10px] text-amber-600">
+            Type a message or click &quot;Skip reasoning&quot; while Shadow is thinking — it pauses immediately and waits for your input.
+          </div>
+        </div>
+      </div>
+    </MockRailFrame>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
    Mockup map & helpers
    ═══════════════════════════════════════════════════ */
 
@@ -797,6 +1032,7 @@ const sectionMockups: Record<string, React.ReactNode> = {
   "chat-tab": <MockChatTab />,
   "plan-tab": <MockPlanTab />,
   "skills-tab": <MockSkillsTab />,
+  "reasoning": <MockReasoningDemo />,
   "inline-suggestions": <MockProactiveMessages />,
 };
 

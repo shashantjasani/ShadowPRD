@@ -30,13 +30,13 @@ export const componentSections: ComponentSection[] = [
       "The Record Tab is the expert's control center for session capture. It provides session start/stop controls, granular capture settings, auto-trigger configuration, and access to past session captures.",
     subSections: [
       {
-        id: "b-session-controls",
+        id: "a-session-controls",
         title: "Session Controls",
         description:
           "Start and stop session recording. The expert should always know whether capture is active.",
         specs: [
           {
-            id: "b-start-stop",
+            id: "a-start-stop",
             name: "Start Session / End Session toggle",
             description:
               "A prominent button that toggles between starting and ending a capture session. Visual state changes clearly when recording is active.",
@@ -53,7 +53,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-session-status",
+            id: "a-session-status",
             name: "Session status bar",
             description:
               "A compact status bar showing current state: elapsed time, event count, and capture health.",
@@ -66,20 +66,20 @@ export const componentSections: ComponentSection[] = [
         ],
       },
       {
-        id: "b-capture-settings",
+        id: "a-capture-settings",
         title: "Capture Settings",
         description:
           "Granular toggles that control what types of activity Shadow captures during a session. Experts can customize based on what's relevant.",
         specs: [
           {
-            id: "b-capture-clicks",
+            id: "a-capture-clicks",
             name: "Clicks",
             description: "Capture mouse click events with target element and position.",
             states: ["On (default)", "Off"],
             guidelines: ["Includes left-click, right-click, and double-click."],
           },
           {
-            id: "b-capture-types",
+            id: "a-capture-types",
             name: "Types",
             description: "Capture keyboard input events. Sensitive fields (password, SSN) are automatically redacted.",
             states: ["On (default)", "Off"],
@@ -89,21 +89,21 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-capture-scrolls",
+            id: "a-capture-scrolls",
             name: "Scrolls",
             description: "Capture scroll position changes. Useful for understanding navigation patterns.",
             states: ["Off (default)", "On"],
             guidelines: ["Off by default to reduce noise. Enable for detailed workflow analysis."],
           },
           {
-            id: "b-capture-hovers",
+            id: "a-capture-hovers",
             name: "Hovers",
             description: "Capture hover events over interactive elements. Useful for understanding exploration patterns.",
             states: ["Off (default)", "On"],
             guidelines: ["Off by default — generates high event volume. Enable only when hover behavior is relevant."],
           },
           {
-            id: "b-capture-network",
+            id: "a-capture-network",
             name: "Network Calls",
             description: "Capture XHR/Fetch requests and responses (status codes, endpoints). Payloads are not captured.",
             states: ["On (default)", "Off"],
@@ -113,7 +113,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-capture-screenshots",
+            id: "a-capture-screenshots",
             name: "Screenshots",
             description: "Capture screenshots at key moments (clicks, navigation, form submissions).",
             states: ["On (default)", "Off"],
@@ -123,7 +123,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-capture-desktop",
+            id: "a-capture-desktop",
             name: "Full Desktop Capture",
             description: "Extends capture beyond the browser to the full desktop environment. Has sub-options for scope control.",
             states: ["Off (default)", "On"],
@@ -133,32 +133,32 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-capture-desktop-specific",
+            id: "a-capture-desktop-specific",
             name: "Specific Desktop Only",
             description: "Limit desktop capture to a single monitor or virtual desktop.",
             states: ["On (default when desktop capture is enabled)", "Off"],
             guidelines: ["Reduces noise by focusing on the expert's primary workspace."],
           },
           {
-            id: "b-capture-desktop-non-chrome",
+            id: "a-capture-desktop-non-chrome",
             name: "Only when engaging non-Chrome window",
             description: "Desktop capture only activates when the expert switches away from Chrome (e.g., to a desktop app like Excel, Slack, or a CRM tool).",
             states: ["Off (default)", "On"],
             guidelines: [
               "Useful for capturing cross-application workflows without doubling up on in-browser capture.",
-              "In-browser capture (Section B settings above) remains active for Chrome tabs.",
+              "In-browser capture (Section A settings above) remains active for Chrome tabs.",
             ],
           },
         ],
       },
       {
-        id: "b-auto-triggers",
+        id: "a-auto-triggers",
         title: "Auto-Triggers",
         description:
           "Configurable rules that automatically start a capture session based on specific events, so the expert doesn't have to remember to press 'Start' every time.",
         specs: [
           {
-            id: "b-trigger-engagement",
+            id: "a-trigger-engagement",
             name: "Engagement Start to End",
             description:
               "Automatically start recording when a customer engagement begins (e.g., call connected) and stop when it ends (e.g., wrap-up complete).",
@@ -170,7 +170,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-trigger-iep-login",
+            id: "a-trigger-iep-login",
             name: "IEP Login",
             description:
               "Automatically start recording when the expert logs into the Intuit Expert Platform.",
@@ -181,7 +181,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-trigger-startup",
+            id: "a-trigger-startup",
             name: "System Start-up",
             description:
               "Automatically start recording when the expert's workstation starts up (desktop client only).",
@@ -195,13 +195,13 @@ export const componentSections: ComponentSection[] = [
         ],
       },
       {
-        id: "b-past-sessions",
+        id: "a-past-sessions",
         title: "Past Sessions",
         description:
           "A list of the expert's previous session captures. The expert can review, adjust, and update any past session — correcting errors, adding context, or refining the captured data before it's used for Skill generation.",
         specs: [
           {
-            id: "b-session-list",
+            id: "a-session-list",
             name: "Session list",
             description:
               "Scrollable list of past sessions showing date, duration, event count, and status (reviewed / unreviewed).",
@@ -212,7 +212,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-session-review",
+            id: "a-session-review",
             name: "Session review & adjustment",
             description:
               "The expert can open any past session to review captured events, edit descriptions, remove irrelevant events, add notes, and mark events as key moments.",
@@ -223,7 +223,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "b-session-export",
+            id: "a-session-export",
             name: "Session export",
             description:
               "Export a session as a structured document (JSON or Markdown) for sharing or archiving.",
@@ -244,13 +244,13 @@ export const componentSections: ComponentSection[] = [
       "The Chat Tab is the conversational interface between the expert and Shadow — like a Slack DM with a colleague who can see your screen. The expert asks questions, Shadow responds and can proactively message. When the expert wants Shadow to execute a Skill, an execution preview appears for approval. When the expert wants to plan, Shadow builds a plan in the dedicated Plan tab.",
     subSections: [
       {
-        id: "c-chat-interaction",
+        id: "b-chat-interaction",
         title: "Chat Interaction",
         description:
           "The core conversational interface — input, messages, and Skill execution flow.",
         specs: [
           {
-            id: "c-input",
+            id: "b-input",
             name: "Chat input",
             description:
               "Text input field with send button. Supports natural language questions, commands, and follow-ups.",
@@ -261,7 +261,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "c-messages",
+            id: "b-messages",
             name: "Message history",
             description:
               "Scrollable chat history. Expert messages on the right, Shadow responses on the left. Proactive messages from Shadow include source badges (see Proactive Messages section).",
@@ -273,7 +273,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "c-skill-execution",
+            id: "b-skill-execution",
             name: "Skill Execution Preview",
             description:
               "When the expert asks Shadow to execute a Skill, it presents a preview card showing the Skill name, every parameter and value, and three action buttons: Approve & Execute, Review & Edit, and Skip.",
@@ -285,7 +285,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "c-plan-trigger",
+            id: "b-plan-trigger",
             name: "Plan creation from Chat",
             description:
               "When the expert asks Shadow to plan something (e.g., 'plan it out for me'), Shadow builds the plan in the Plan tab and confirms in chat with a reference to switch over.",
@@ -298,13 +298,13 @@ export const componentSections: ComponentSection[] = [
         ],
       },
       {
-        id: "c-image-upload",
+        id: "b-image-upload",
         title: "Image Upload",
         description:
           "The expert can attach images (screenshots, photos of documents, error messages) to provide Shadow with visual context.",
         specs: [
           {
-            id: "c-upload-action",
+            id: "b-upload-action",
             name: "Upload interaction",
             description:
               "An attachment icon next to the chat input. Supports click-to-browse, drag-and-drop, and paste from clipboard.",
@@ -322,7 +322,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "c-upload-context",
+            id: "b-upload-context",
             name: "How Shadow uses images",
             description:
               "Shadow analyzes uploaded images for context — identifying UI elements, error messages, data on screen — to inform its responses and Skill suggestions.",
@@ -597,20 +597,141 @@ export const componentSections: ComponentSection[] = [
     ],
   },
   {
-    id: "inline-suggestions",
+    id: "reasoning",
     letter: "E",
+    title: "Shadow Reasoning",
+    description:
+      "Before Shadow surfaces a suggestion, executes a Skill, or sends a proactive message, the expert can see its thought process — a collapsible, ghost-text reasoning block that appears inline in the chat stream. Think of Cursor's thinking/reasoning display: subtle, transparent, and interruptible. The expert sees what Shadow is analyzing, what it found, and what it's about to do — and can interject before the final output lands. This builds trust, reduces surprise, and makes Shadow feel like a colleague thinking out loud, not a black box producing answers.",
+    subSections: [
+      {
+        id: "e-reasoning-block",
+        title: "Reasoning Block",
+        description:
+          "A collapsible inline block in the chat stream that shows Shadow's internal reasoning. It appears before Shadow's actual response or proactive message, giving the expert a window into the agent's thought process.",
+        specs: [
+          {
+            id: "e-block-anatomy",
+            name: "Block anatomy",
+            description:
+              "The reasoning block has three parts: (1) a thinking indicator line ('Shadow is thinking...') with a subtle animation, (2) the reasoning content — a sequence of short, human-readable steps showing what Shadow checked, found, and decided, and (3) a collapse/expand toggle so the expert can hide it once read.",
+            states: [
+              "Streaming: reasoning steps appear one at a time as Shadow processes, with a typing indicator for the next step.",
+              "Complete: all reasoning steps are visible, the thinking indicator disappears, and Shadow's actual message follows.",
+              "Collapsed: the block is minimized to a single line ('Shadow reasoned about reconciliation Skills...') with a click-to-expand arrow.",
+              "Interrupted: the expert types or clicks 'Skip' mid-reasoning, and Shadow stops and waits for input.",
+            ],
+            guidelines: [
+              "Reasoning blocks are visually distinct from regular messages — lighter background (zinc-50), italic text, smaller font size, and a left border accent in a muted color.",
+              "They should feel ephemeral — important to see in the moment, but not dominating the chat history.",
+              "Default behavior: auto-collapse after the expert reads the final message. The expert can re-expand from the collapsed state.",
+              "Reasoning blocks are never shown for trivial responses (e.g., 'Got it' or 'Done'). Only for substantive actions: Skill lookups, context fetches, plan construction, pattern detection.",
+            ],
+          },
+          {
+            id: "e-reasoning-content",
+            name: "Reasoning content style",
+            description:
+              "Each reasoning step is a short, plain-language sentence describing one atomic action Shadow took. Steps use a consistent format: action verb + what was checked/found + result.",
+            guidelines: [
+              "Examples of good reasoning steps: 'Checking customer history for David Park...' → 'Found 1 previous interaction (Feb 1, handled by Marcus).' → 'Matching topic \"reconciliation\" to Skills in your library...' → '2 Skills matched: qbo-reconcile-account, qbo-resolve-discrepancy.'",
+              "Keep each step to one line — no paragraphs, no jargon.",
+              "Use ellipsis (...) for in-progress steps and a check (✓) or result for completed ones.",
+              "Steps should stream in order — the expert sees the reasoning build up in real time, like watching someone think.",
+            ],
+          },
+          {
+            id: "e-interrupt",
+            name: "Expert interruption",
+            description:
+              "The expert can interrupt Shadow's reasoning at any time by typing a message or clicking a 'Skip reasoning' button. Shadow pauses its analysis and responds to the expert's input instead.",
+            guidelines: [
+              "Interruption is immediate — Shadow doesn't finish its current reasoning chain.",
+              "The interrupted reasoning block is marked as 'Interrupted' and collapsed.",
+              "Shadow acknowledges the interruption naturally: 'Okay, stopping there. What do you need?'",
+              "This is critical for mid-call situations where the expert needs Shadow to pivot quickly.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "e-reasoning-contexts",
+        title: "When Reasoning Appears",
+        description:
+          "Reasoning blocks appear in specific contexts where transparency matters most. Not every Shadow action needs visible reasoning.",
+        specs: [
+          {
+            id: "e-context-precall",
+            name: "Pre-call preparation",
+            description:
+              "When a contact arrives and Shadow fetches context and Skills, reasoning shows: what customer data it looked up, what it found in the Memory Service, and which Skills it matched to the topic.",
+          },
+          {
+            id: "e-context-midcall",
+            name: "Mid-call observation",
+            description:
+              "When Shadow detects a relevant pattern or wants to surface a nudge, reasoning shows what it observed (navigation, action sequence), what it matched it to (Skill step, previous session), and why it decided to speak up.",
+          },
+          {
+            id: "e-context-execution",
+            name: "Before Skill execution",
+            description:
+              "When Shadow prepares a Skill execution preview, reasoning shows which Skill it selected, how it determined the parameters (from context, from the conversation, from defaults), and what it's about to do.",
+          },
+          {
+            id: "e-context-plan",
+            name: "Plan construction",
+            description:
+              "When Shadow builds a plan, reasoning shows which Skills it's composing, how it ordered the steps, and any context lookups it included as plan items.",
+          },
+          {
+            id: "e-context-postcall",
+            name: "Post-call analysis",
+            description:
+              "When Shadow generates a summary or proposes a Skill update, reasoning shows what it analyzed (transcript segments, action sequences), what patterns it detected, and why it's proposing the change.",
+          },
+        ],
+      },
+      {
+        id: "e-reasoning-settings",
+        title: "Expert Control",
+        description:
+          "The expert can control how much reasoning Shadow shows, matching their comfort level and experience with the tool.",
+        specs: [
+          {
+            id: "e-verbosity",
+            name: "Reasoning verbosity",
+            description:
+              "A setting that controls how detailed reasoning blocks are: 'Detailed' (every step shown), 'Summary' (key findings only, collapsed by default), or 'Off' (no reasoning blocks — Shadow just sends the final message).",
+            states: [
+              "Detailed: full reasoning stream, expanded by default. Best for new users building trust.",
+              "Summary: single-line collapsed block with the conclusion. Click to expand full reasoning. Best for experienced users.",
+              "Off: no reasoning blocks. Shadow messages appear directly. For experts who fully trust Shadow.",
+            ],
+            guidelines: [
+              "Default is 'Summary' — gives transparency without noise.",
+              "The setting is per-expert and persists across sessions.",
+              "Even when set to 'Off', the expert can ask 'Why did you suggest that?' and Shadow will show the reasoning retroactively.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "inline-suggestions",
+    letter: "F",
     title: "Proactive Messages",
     description:
       "Shadow and the expert interact like two colleagues on Slack who are looking at the same screen. Shadow doesn't overlay floating UI elements on the page — it communicates through the chat. When Shadow notices something relevant (a matching Skill, a customer history detail, a behavioral pattern), it sends a proactive message in the conversation, just like a colleague would tap you and say 'Hey, heads up.' The chat is always the single channel of communication.",
     subSections: [
       {
-        id: "e-proactive-triggers",
+        id: "f-proactive-triggers",
         title: "When Shadow Speaks Up",
         description:
           "Shadow monitors the expert's context — the page they're on, the customer they're helping, the actions they're taking — and proactively sends messages when it has something useful to share. These aren't system alerts; they're conversational.",
         specs: [
           {
-            id: "e-message-types",
+            id: "f-message-types",
             name: "Message types",
             description:
               "Three flavors of proactive message: (1) Context recall — Shadow surfaces relevant history ('Heads up — David called about a $247 discrepancy in Supplies last month. That unmatched Office Supplies line might be related.'), (2) Skill match — Shadow notices a relevant Skill ('You're on the reconcile page — I have a Skill for this. Want me to walk you through it or run it?'), (3) Pattern observation — Shadow notices something the expert does repeatedly ('I've seen you pull the Transaction Detail report during reconciliations the last 3 times. Want me to add that as a step in your Skill?').",
@@ -622,7 +743,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "e-message-frequency",
+            id: "f-message-frequency",
             name: "Cadence & restraint",
             description:
               "Shadow is a thoughtful colleague, not a noisy one. It limits proactive messages to avoid fatigue — typically no more than 2-3 unsolicited messages per call. It prioritizes high-confidence, high-value observations over exhaustive commentary.",
@@ -636,13 +757,13 @@ export const componentSections: ComponentSection[] = [
         ],
       },
       {
-        id: "e-visual-treatment",
+        id: "f-visual-treatment",
         title: "How Proactive Messages Look in Chat",
         description:
           "Proactive messages appear in the same chat stream as regular conversation, but with a subtle visual distinction so the expert can tell at a glance that Shadow initiated the message (vs. responding to a question).",
         specs: [
           {
-            id: "e-proactive-styling",
+            id: "f-proactive-styling",
             name: "Visual differentiation",
             description:
               "Proactive messages share the same chat bubble style as Shadow's regular responses but include a small source badge above the message (e.g., 'Customer history', 'Skill match'). An optional left-border accent or icon distinguishes them from direct replies without breaking the chat flow.",
@@ -659,7 +780,7 @@ export const componentSections: ComponentSection[] = [
             ],
           },
           {
-            id: "e-attention-dot",
+            id: "f-attention-dot",
             name: "Unread indicator",
             description:
               "If the expert has the Right Panel minimized or is on a different tab when Shadow sends a proactive message, a subtle dot appears on the Shadow extension icon — like an unread badge on Slack. It signals 'I have something for you' without demanding attention.",
@@ -672,25 +793,25 @@ export const componentSections: ComponentSection[] = [
         ],
       },
       {
-        id: "e-conversation-examples",
+        id: "f-conversation-examples",
         title: "Conversation Patterns",
         description:
           "Examples of how proactive messages weave naturally into the chat — showing the Slack-like dynamic between Shadow and the expert.",
         specs: [
           {
-            id: "e-example-context",
+            id: "f-example-context",
             name: "Context recall mid-call",
             description:
               "Expert is on the reconcile page. Shadow sends: 'Heads up — David mentioned a $247 issue with Supplies last call. That unmatched Office Supplies Co. line ($247.00) might be the same thing.' Expert replies: 'Good catch, let me check.' The conversation continues naturally from there.",
           },
           {
-            id: "e-example-skill",
+            id: "f-example-skill",
             name: "Skill suggestion",
             description:
-              "Expert navigates to the invoice page. Shadow sends: 'I have a Skill for creating invoices from estimates — want me to pull it up?' Expert replies: 'Yeah, plan it out for me.' Shadow responds with a Plan Mode checklist.",
+              "Expert navigates to the invoice page. Shadow sends: 'I have a Skill for creating invoices from estimates — want me to pull it up?' Expert replies: 'Yeah, plan it out for me.' Shadow opens the Plan Tab with a structured checklist.",
           },
           {
-            id: "e-example-pattern",
+            id: "f-example-pattern",
             name: "Pattern observation",
             description:
               "After the expert finishes a reconciliation, Shadow sends: 'I noticed you always pull the Transaction Detail report after reconciling. Want me to add that as a step in your qbo-reconcile-account Skill?' Expert replies: 'Yes, but make it optional — I only do it for business checking.' Shadow updates the Skill and confirms.",

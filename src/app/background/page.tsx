@@ -157,7 +157,7 @@ export default function BackgroundPage() {
 
           <div className="rounded-lg border-l-4 border-accent bg-surface p-5">
             <h4 className="mb-2 font-semibold text-accent">
-              Phase 1: Immediate Value
+              Chrome Extension: Immediate Value
             </h4>
             <EditableText
               contentKey="background.personalization.phase1Value"
